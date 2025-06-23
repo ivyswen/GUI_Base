@@ -12,11 +12,12 @@
 - **状态栏显示**: 实时显示程序状态和操作反馈
 
 ### 📋 界面组件
-- **欢迎页面**: 程序介绍和功能说明
-- **文本编辑器**: 基础的文本编辑功能
-- **设置页面**: 可扩展的配置选项页面
+- **欢迎页面**: 程序介绍和功能说明，包含快速操作按钮
+- **文本编辑器**: 基础的文本编辑功能，带有操作按钮
+- **设置页面**: 可扩展的配置选项页面，包含各种设置按钮
 - **菜单栏**: 文件操作、编辑功能、帮助信息
 - **状态栏**: 操作提示和程序状态显示
+- **统一按钮样式**: 5种不同类型的按钮样式（默认、主要、成功、警告、危险）
 
 ## 项目结构
 
@@ -26,6 +27,9 @@ GUI_Base/
 ├── Resources/           # 资源文件目录
 │   ├── favicon.ico      # 应用程序图标
 │   └── icon-192.png     # 备用图标文件
+├── build_nuitka.py      # Nuitka构建脚本（灵活配置版）
+├── build_example.py     # 构建脚本使用示例
+├── button_style_demo.py # 按钮样式演示程序
 ├── pyproject.toml       # 项目配置文件
 ├── uv.lock             # 依赖锁定文件
 └── README.md           # 项目说明文档
@@ -48,11 +52,14 @@ pip install pyside6>=6.9.1
 
 ### 运行程序
 ```bash
-# 使用uv运行
+# 使用uv运行主程序
 uv run python main.py
 
-# 或直接运行
+# 或直接运行主程序
 python main.py
+
+# 运行按钮样式演示
+python button_style_demo.py
 ```
 
 ## 使用说明
@@ -109,6 +116,39 @@ new_menu.addAction(new_action)
 - `.png` 文件（跨平台）
 
 程序会自动按优先级加载图标文件。
+
+### 按钮样式系统
+模板提供了5种不同类型的按钮样式：
+
+```python
+# 在MainWindow类中使用按钮样式
+button = QPushButton("按钮文本")
+button.setStyleSheet(self.get_button_style("样式类型"))
+```
+
+**可用样式类型：**
+- `"default"`: 默认样式（灰色）- 适用于一般操作
+- `"primary"`: 主要样式（蓝色）- 适用于重要操作
+- `"success"`: 成功样式（绿色）- 适用于确认、保存操作
+- `"warning"`: 警告样式（黄色）- 适用于需要注意的操作
+- `"danger"`: 危险样式（红色）- 适用于删除、重置操作
+
+**样式特性：**
+- 统一的圆角边框和内边距
+- 悬停和按下状态的视觉反馈
+- 禁用状态的灰化效果
+- 响应式的最小尺寸设置
+
+**使用示例：**
+```python
+# 主要操作按钮
+save_button = QPushButton("保存")
+save_button.setStyleSheet(self.get_button_style("primary"))
+
+# 删除操作按钮
+delete_button = QPushButton("删除")
+delete_button.setStyleSheet(self.get_button_style("danger"))
+```
 
 ## 技术架构
 
