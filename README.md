@@ -23,16 +23,21 @@
 
 ```
 GUI_Base/
-├── main.py              # 主程序文件
-├── Resources/           # 资源文件目录
-│   ├── favicon.ico      # 应用程序图标
-│   └── icon-192.png     # 备用图标文件
-├── build_nuitka.py      # Nuitka构建脚本（灵活配置版）
-├── build_example.py     # 构建脚本使用示例
-├── button_style_demo.py # 按钮样式演示程序
-├── pyproject.toml       # 项目配置文件
-├── uv.lock             # 依赖锁定文件
-└── README.md           # 项目说明文档
+├── main.py                      # 主程序文件（原始PyQt样式）
+├── main_fluent.py              # Fluent-Widgets现代化版本
+├── fluent_style_comparison.py  # 样式对比演示程序
+├── fluent_migration_guide.md   # Fluent-Widgets迁移指南
+├── Resources/                   # 资源文件目录
+│   ├── favicon.ico             # 应用程序图标
+│   └── icon-192.png            # 备用图标文件
+├── build_nuitka.py             # Nuitka构建脚本（原始版本）
+├── build_fluent_nuitka.py      # Fluent版本专用构建脚本
+├── build_example.py            # 构建脚本使用示例
+├── build_fluent_example.py     # Fluent版本构建示例
+├── button_style_demo.py        # 按钮样式演示程序
+├── pyproject.toml              # 项目配置文件
+├── uv.lock                     # 依赖锁定文件
+└── README.md                   # 项目说明文档
 ```
 
 ## 安装和运行
@@ -40,6 +45,7 @@ GUI_Base/
 ### 环境要求
 - Python 3.11+
 - PySide6 6.9.1+
+- PySide6-Fluent-Widgets 1.8.3+
 
 ### 安装依赖
 ```bash
@@ -47,16 +53,19 @@ GUI_Base/
 uv sync
 
 # 或使用pip安装
-pip install pyside6>=6.9.1
+pip install pyside6>=6.9.1 pyside6-fluent-widgets>=1.8.3
 ```
 
 ### 运行程序
 ```bash
-# 使用uv运行主程序
+# 使用uv运行主程序（原始PyQt样式）
 uv run python main.py
 
-# 或直接运行主程序
-python main.py
+# 运行Fluent-Widgets现代化版本
+uv run python main_fluent.py
+
+# 运行样式对比演示
+uv run python fluent_style_comparison.py
 
 # 运行按钮样式演示
 python button_style_demo.py
@@ -148,6 +157,54 @@ save_button.setStyleSheet(self.get_button_style("primary"))
 # 删除操作按钮
 delete_button = QPushButton("删除")
 delete_button.setStyleSheet(self.get_button_style("danger"))
+```
+
+## PySide6-Fluent-Widgets 集成
+
+### 🎨 现代化UI设计
+本项目现已集成PySide6-Fluent-Widgets库，提供现代化的Fluent Design用户界面。
+
+### 主要特性
+- **现代化设计语言**: 基于Microsoft Fluent Design System
+- **流畅动画效果**: 丰富的过渡动画和交互反馈
+- **导航系统**: 侧边栏导航替代传统标签页
+- **主题支持**: 内置深色/浅色主题切换
+- **丰富组件**: 现代化的按钮、文本框、标签等组件
+- **图标系统**: 内置大量Fluent图标
+
+### 版本对比
+
+| 特性 | 原始版本 (main.py) | Fluent版本 (main_fluent.py) |
+|------|-------------------|----------------------------|
+| 设计风格 | 传统桌面应用 | 现代化Fluent Design |
+| 导航方式 | 标签页 | 侧边栏导航 |
+| 按钮样式 | 手动CSS样式 | 内置组件样式 |
+| 主题支持 | 需手动实现 | 一键切换 |
+| 动画效果 | 无 | 流畅过渡动画 |
+| 图标支持 | 外部图标文件 | 内置图标库 |
+
+### 快速体验
+```bash
+# 运行样式对比演示
+uv run python fluent_style_comparison.py
+
+# 查看迁移指南
+cat fluent_migration_guide.md
+```
+
+### 组件替换示例
+```python
+# 原始PyQt组件
+from PySide6.QtWidgets import QPushButton, QLabel
+button = QPushButton("按钮")
+label = QLabel("文本")
+
+# Fluent-Widgets组件
+from qfluentwidgets import PushButton, PrimaryPushButton, TitleLabel, BodyLabel
+button = PushButton("按钮")
+primary_button = PrimaryPushButton("主要按钮")
+title = TitleLabel("标题")
+body = BodyLabel("正文")
 ```
 
 ## 技术架构
