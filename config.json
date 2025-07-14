@@ -7,5 +7,7 @@
     "auto_check_updates": true,
     "update_check_timeout": 10,
     "download_timeout": 300,
-    "temp_dir_name": "app_update"
+    "temp_dir_name": "app_update",
+    "skipped_versions": {},
+    "skip_duration_days": 30
 }

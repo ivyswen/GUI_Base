@@ -376,10 +376,15 @@ class UpdateManager(QObject):
     
     def skip_version(self, version: str):
         """跳过指定版本"""
-        # 可以将跳过的版本保存到配置中
-        # 这里简单实现，实际项目中可能需要更复杂的逻辑
+        logger.info(f"用户选择跳过版本: {version}")
+
+        # 使用配置管理器跳过版本
+        app_config.skip_version(version)
+
+        # 显示状态消息
         if self.parent_window:
-            self.parent_window.status_bar.showMessage(f"已跳过版本 {version}", 3000)
+            skip_days = app_config.get("skip_duration_days", 30)
+            self.parent_window.status_bar.showMessage(f"已跳过版本 {version}（{skip_days}天内不再提醒）", 5000)
     
     def cleanup_download(self):
         """清理下载文件"""
@@ -409,3 +414,26 @@ class UpdateManager(QObject):
     def set_auto_check_enabled(self, enabled: bool):
         """设置自动检查开关"""
         app_config.set_auto_check_updates(enabled)
+
+    def get_skipped_versions_info(self) -> dict:
+        """获取跳过版本的详细信息"""
+        return app_config.get_skipped_versions_info()
+
+    def clear_skipped_versions(self):
+        """清除所有跳过的版本"""
+        app_config.clear_skipped_versions()
+        logger.info("已清除所有跳过的版本")
+
+        if self.parent_window:
+            self.parent_window.status_bar.showMessage("已清除所有跳过的版本", 3000)
+
+    def remove_skipped_version(self, version: str) -> bool:
+        """移除指定的跳过版本"""
+        success = app_config.remove_skipped_version(version)
+
+        if success:
+            logger.info(f"已移除跳过版本: {version}")
+            if self.parent_window:
+                self.parent_window.status_bar.showMessage(f"已移除跳过版本 {version}", 3000)
+
+        return success

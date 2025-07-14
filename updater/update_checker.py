@@ -127,8 +127,14 @@ class UpdateCheckWorker(QThread):
 
             # 比较版本
             if self._is_newer_version(version_info.version, self.current_version):
-                logger.info(f"发现新版本: {version_info.version} > {self.current_version}")
-                self.update_available.emit(version_info)
+                # 检查版本是否被跳过
+                from .config import app_config
+                if app_config.is_version_skipped(version_info.version):
+                    logger.info(f"发现新版本 {version_info.version}，但已被用户跳过")
+                    self.no_update.emit()
+                else:
+                    logger.info(f"发现新版本: {version_info.version} > {self.current_version}")
+                    self.update_available.emit(version_info)
             else:
                 logger.info(f"当前已是最新版本: {self.current_version}")
                 self.no_update.emit()

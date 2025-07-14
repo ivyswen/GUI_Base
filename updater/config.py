@@ -110,7 +110,9 @@ class AppConfig:
         "auto_check_updates": True,
         "update_check_timeout": 10,  # 秒
         "download_timeout": 300,     # 秒
-        "temp_dir_name": "app_update"
+        "temp_dir_name": "app_update",
+        "skipped_versions": {},      # 跳过的版本：{"version": expire_timestamp}
+        "skip_duration_days": 30     # 跳过版本的有效期（天）
     }
     
     def __init__(self, config_file: str = "config.json"):
@@ -315,6 +317,123 @@ class AppConfig:
             self.set("current_version", exe_version)
             self.save_config()
             return True
+        return False
+
+    def skip_version(self, version: str, duration_days: int = None):
+        """
+        跳过指定版本
+
+        Args:
+            version: 要跳过的版本号
+            duration_days: 跳过的有效期（天），如果不指定则使用配置中的默认值
+        """
+        import time
+
+        duration = duration_days or self.get("skip_duration_days", 30)
+        expire_time = time.time() + (duration * 24 * 60 * 60)
+
+        skipped = self.get("skipped_versions", {})
+        skipped[version] = expire_time
+        self.set("skipped_versions", skipped)
+        self.save_config()
+
+        # 记录日志
+        from .logger import get_logger
+        logger = get_logger(__name__)
+        logger.info(f"跳过版本 {version}，有效期 {duration} 天")
+
+    def is_version_skipped(self, version: str) -> bool:
+        """
+        检查版本是否被跳过（考虑过期时间）
+
+        Args:
+            version: 要检查的版本号
+
+        Returns:
+            是否被跳过
+        """
+        import time
+
+        skipped = self.get("skipped_versions", {})
+
+        if version not in skipped:
+            return False
+
+        # 检查是否过期
+        if time.time() > skipped[version]:
+            # 已过期，移除并返回False
+            del skipped[version]
+            self.set("skipped_versions", skipped)
+            self.save_config()
+
+            # 记录日志
+            from .logger import get_logger
+            logger = get_logger(__name__)
+            logger.info(f"跳过版本 {version} 已过期，自动移除")
+            return False
+
+        return True
+
+    def clear_skipped_versions(self):
+        """清除所有跳过的版本"""
+        skipped_count = len(self.get("skipped_versions", {}))
+        self.set("skipped_versions", {})
+        self.save_config()
+
+        # 记录日志
+        from .logger import get_logger
+        logger = get_logger(__name__)
+        logger.info(f"清除了 {skipped_count} 个跳过的版本")
+
+    def get_skipped_versions_info(self) -> dict:
+        """
+        获取跳过版本的详细信息
+
+        Returns:
+            包含版本和过期时间信息的字典
+        """
+        import time
+        from datetime import datetime
+
+        skipped = self.get("skipped_versions", {})
+        result = {}
+
+        for version, expire_timestamp in skipped.items():
+            expire_date = datetime.fromtimestamp(expire_timestamp)
+            is_expired = time.time() > expire_timestamp
+
+            result[version] = {
+                "expire_timestamp": expire_timestamp,
+                "expire_date": expire_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "is_expired": is_expired,
+                "days_remaining": max(0, int((expire_timestamp - time.time()) / (24 * 60 * 60)))
+            }
+
+        return result
+
+    def remove_skipped_version(self, version: str) -> bool:
+        """
+        移除指定的跳过版本
+
+        Args:
+            version: 要移除的版本号
+
+        Returns:
+            是否成功移除
+        """
+        skipped = self.get("skipped_versions", {})
+
+        if version in skipped:
+            del skipped[version]
+            self.set("skipped_versions", skipped)
+            self.save_config()
+
+            # 记录日志
+            from .logger import get_logger
+            logger = get_logger(__name__)
+            logger.info(f"手动移除跳过版本: {version}")
+            return True
+
         return False
 
 
