@@ -22,6 +22,7 @@ Nuitka构建脚本 - 灵活配置版本
 - output_dir: 构建输出目录
 - resources_dir: 资源文件目录
 - executable_name: 最终可执行文件名
+- data_dirs: 需要复制的额外目录列表（如果目录存在就复制）
 
 作者: @心福口福
 日期: 2025
@@ -36,15 +37,60 @@ import shutil
 BUILD_CONFIG = {
     "company_name": "@心福口福",
     "product_name": "gui-base",
-    "file_version": "1.0.0",
-    "product_version": "1.0.0",
+    "file_version": "1.1.0",
+    "product_version": "1.1.0",
     "file_description": "GUI Base Template - 基础GUI程序模板",
     "copyright": "Copyright 2025 @心福口福",
     "main_script": "main.py",
-    "output_dir": "nuitka_build",
+    "output_dir": "build",
     "resources_dir": "Resources",  # 注意这里改为大写R，匹配项目结构
-    "executable_name": "gui-base"
+    "executable_name": "gui-base",
+    "data_dirs": [  # 需要复制的额外目录列表
+        "docs",     # 文档目录
+        "config",   # 配置目录
+        "templates", # 模板目录
+        "plugins",  # 插件目录
+        # 可以添加更多目录
+    ]
 }
+
+def add_data_dir(directory: str):
+    """添加数据目录到构建配置
+
+    Args:
+        directory: 要添加的目录路径
+    """
+    if "data_dirs" not in BUILD_CONFIG:
+        BUILD_CONFIG["data_dirs"] = []
+
+    if directory not in BUILD_CONFIG["data_dirs"]:
+        BUILD_CONFIG["data_dirs"].append(directory)
+        print(f"✅ 添加数据目录: {directory}")
+    else:
+        print(f"⚠️  数据目录已存在: {directory}")
+
+def remove_data_dir(directory: str):
+    """从构建配置中移除数据目录
+
+    Args:
+        directory: 要移除的目录路径
+    """
+    if "data_dirs" in BUILD_CONFIG and directory in BUILD_CONFIG["data_dirs"]:
+        BUILD_CONFIG["data_dirs"].remove(directory)
+        print(f"✅ 移除数据目录: {directory}")
+    else:
+        print(f"⚠️  数据目录不存在: {directory}")
+
+def list_data_dirs():
+    """列出当前配置的数据目录"""
+    data_dirs = BUILD_CONFIG.get("data_dirs", [])
+    if data_dirs:
+        print("📁 当前配置的数据目录:")
+        for i, data_dir in enumerate(data_dirs, 1):
+            exists = "✅" if os.path.exists(data_dir) else "❌"
+            print(f"  {i}. {data_dir} {exists}")
+    else:
+        print("📁 未配置数据目录")
 
 def update_build_config(**kwargs):
     """更新构建配置
@@ -61,6 +107,7 @@ def update_build_config(**kwargs):
             - output_dir: 输出目录
             - resources_dir: 资源目录
             - executable_name: 可执行文件名
+            - data_dirs: 需要复制的额外目录列表
 
     Example:
         update_build_config(
@@ -136,6 +183,17 @@ def build_executable():
         cmd.append(f"--include-data-dir={resources_dir}={resources_dir}")
         print(f"包含资源目录: {resources_dir}")
 
+    # 包含额外的数据目录
+    data_dirs = BUILD_CONFIG.get("data_dirs", [])
+    if data_dirs:
+        print("检查额外数据目录:")
+        for data_dir in data_dirs:
+            if os.path.exists(data_dir):
+                cmd.append(f"--include-data-dir={data_dir}={data_dir}")
+                print(f"  ✅ 包含目录: {data_dir}")
+            else:
+                print(f"  ⚠️  跳过不存在的目录: {data_dir}")
+
     # 包含配置文件（如果存在）
     if os.path.exists("config.json"):
         cmd.append("--include-data-file=config.json=config.json")
@@ -197,24 +255,46 @@ def build_executable():
 
         sys.exit(1)
 
+def example_custom_build():
+    """示例：自定义构建配置"""
+    print("📝 示例：自定义构建配置")
+
+    # 自定义基本信息
+    update_build_config(
+        company_name="您的公司名称",
+        product_name="your-app-name",
+        file_version="1.0.0",
+        product_version="1.0.0",
+        file_description="您的应用程序描述",
+        copyright="Copyright 2025 您的公司名称",
+        executable_name="your-app"
+    )
+
+    # 添加自定义数据目录
+    add_data_dir("custom_data")
+    add_data_dir("user_configs")
+    add_data_dir("themes")
+
+    # 显示当前配置
+    list_data_dirs()
+
+    # 开始构建
+    build_executable()
+
 if __name__ == "__main__":
     # 示例：自定义构建配置
-    # 取消注释下面的代码来自定义您的应用程序信息
-
-    # update_build_config(
-    #     company_name="您的公司名称",
-    #     product_name="your-app-name",
-    #     file_version="1.0.0",
-    #     product_version="1.0.0",
-    #     file_description="您的应用程序描述",
-    #     copyright="Copyright 2025 您的公司名称",
-    #     executable_name="your-app"
-    # )
+    # 取消注释下面的代码来使用自定义配置
+    # example_custom_build()
+    # return
 
     print("🚀 开始构建可执行文件...")
     print(f"📋 当前构建配置:")
     for key, value in BUILD_CONFIG.items():
         print(f"   {key}: {value}")
+    print()
+
+    # 显示数据目录配置
+    list_data_dirs()
     print()
 
     build_executable()

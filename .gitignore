@@ -8,6 +8,5 @@ wheels/
 
 # Virtual environments
 .venv/
-nuitka_build/
 logs/
 resources_rc.py

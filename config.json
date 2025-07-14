@@ -1,0 +1,11 @@
+{
+    "app_name": "GUI Base Template",
+    "current_version": "1.0.0",
+    "organization_name": "Your Organization",
+    "update_server": "https://download.tuolong56.com",
+    "update_check_url": "https://download.tuolong56.com/url/python_updates/update.json",
+    "auto_check_updates": true,
+    "update_check_timeout": 10,
+    "download_timeout": 300,
+    "temp_dir_name": "app_update"
+}

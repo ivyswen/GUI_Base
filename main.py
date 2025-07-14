@@ -6,6 +6,9 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget,
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QAction
 
+# 导入自动更新相关模块
+from updater import UpdateManager, app_config, app_logger
+
 
 class MainWindow(QMainWindow):
     """主窗口类 - GUI程序的基础模板"""
@@ -14,6 +17,12 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.init_ui()
         self.center_window()
+
+        # 初始化更新管理器
+        self.update_manager = UpdateManager(self)
+
+        # 启动时检查更新（延迟执行）
+        self.update_manager.check_for_updates_on_startup()
 
     def get_button_style(self, style_type="default"):
         """获取按钮样式，确保视觉一致性
@@ -127,7 +136,7 @@ class MainWindow(QMainWindow):
     def init_ui(self):
         """初始化用户界面"""
         # 设置窗口基本属性
-        self.setWindowTitle("GUI Base Template")
+        self.setWindowTitle(app_config.app_name)
         self.setGeometry(100, 100, 800, 600)
 
         # 设置窗口图标
@@ -206,6 +215,14 @@ class MainWindow(QMainWindow):
 
         # 帮助菜单
         help_menu = menubar.addMenu('帮助(&H)')
+
+        # 检查更新动作
+        check_update_action = QAction('检查更新(&U)', self)
+        check_update_action.setStatusTip('检查软件更新')
+        check_update_action.triggered.connect(self.check_for_updates)
+        help_menu.addAction(check_update_action)
+
+        help_menu.addSeparator()
 
         # 关于动作
         about_action = QAction('关于(&A)', self)
@@ -414,9 +431,10 @@ class MainWindow(QMainWindow):
         """显示关于信息"""
         from PySide6.QtWidgets import QMessageBox
         QMessageBox.about(self, "关于",
-                         "GUI Base Template v1.0\n\n"
+                         f"{app_config.app_name} v{app_config.current_version}\n\n"
                          "一个基础的GUI程序模板\n"
-                         "基于PySide6开发")
+                         "基于PySide6开发\n\n"
+                         f"组织: {app_config.organization_name}")
 
     # 标签页功能函数
     def clear_text(self):
@@ -498,6 +516,15 @@ class MainWindow(QMainWindow):
         else:
             self.status_bar.showMessage("取消重置", 2000)
 
+    def check_for_updates(self):
+        """检查更新"""
+        app_logger.info("用户手动触发检查更新")
+        if hasattr(self, 'update_manager'):
+            self.update_manager.check_for_updates_manual_with_flag()
+        else:
+            app_logger.error("更新管理器未初始化")
+            self.status_bar.showMessage("更新功能不可用", 2000)
+
 
 def main():
     """主函数"""
@@ -505,9 +532,9 @@ def main():
     app = QApplication(sys.argv)
 
     # 设置应用程序属性
-    app.setApplicationName("GUI Base Template")
-    app.setApplicationVersion("1.0")
-    app.setOrganizationName("Your Organization")
+    app.setApplicationName(app_config.app_name)
+    app.setApplicationVersion(app_config.current_version)
+    app.setOrganizationName(app_config.organization_name)
 
     # 创建主窗口
     window = MainWindow()
