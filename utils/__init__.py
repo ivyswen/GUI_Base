@@ -20,6 +20,7 @@ def __getattr__(name):
     elif name == 'app_config':
         from .config import app_config
         return app_config
+
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 __all__ = [

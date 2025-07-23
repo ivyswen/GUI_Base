@@ -20,18 +20,21 @@ class SettingsTab(BaseTab):
         
         # 标题
         title_label = QLabel("设置")
-        title_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
-        
+        title_label.setStyleSheet("margin: 10px;")
+        self.apply_subtitle_font(title_label)
+
         # 设置内容
         settings_label = QLabel(
             "这里可以添加各种设置选项：\n\n"
             "• 主题设置\n"
             "• 语言设置\n"
             "• 字体设置\n"
+            "• 显示优化设置\n"
             "• 其他配置选项\n\n"
             "根据您的需求自定义此页面。"
         )
-        settings_label.setStyleSheet("font-size: 12px; margin: 20px;")
+        settings_label.setStyleSheet("margin: 20px;")
+        self.apply_body_font(settings_label)
         
         # 示例设置按钮
         button_layout = QHBoxLayout()

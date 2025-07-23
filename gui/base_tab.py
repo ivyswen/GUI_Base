@@ -5,6 +5,7 @@
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QObject
+from utils.display import apply_font_to_widget
 
 
 class BaseTab(QWidget):
@@ -125,10 +126,26 @@ class BaseTab(QWidget):
     
     def update_status_bar(self, message, timeout=2000):
         """更新状态栏消息
-        
+
         Args:
             message: 要显示的消息
             timeout: 消息显示时间（毫秒）
         """
         if self.main_window and hasattr(self.main_window, 'status_bar'):
             self.main_window.status_bar.showMessage(message, timeout)
+
+    def apply_title_font(self, widget):
+        """为控件应用标题字体"""
+        apply_font_to_widget(widget, font_size=14, bold=True)
+
+    def apply_subtitle_font(self, widget):
+        """为控件应用副标题字体"""
+        apply_font_to_widget(widget, font_size=12, bold=True)
+
+    def apply_body_font(self, widget):
+        """为控件应用正文字体"""
+        apply_font_to_widget(widget, font_size=9)
+
+    def apply_small_font(self, widget):
+        """为控件应用小字体"""
+        apply_font_to_widget(widget, font_size=8)

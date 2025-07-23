@@ -1,14 +1,20 @@
 import sys
+import os
 from pathlib import Path
+
+# 在导入PySide6之前设置OpenGL属性
+os.environ["QT_OPENGL"] = "desktop"
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget,
                                QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QStatusBar, QTextEdit, QPushButton)
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction, QFont
 
 # 导入自动更新相关模块
 from updater import UpdateManager
 from utils import app_logger, app_config
+from utils.display import setup_high_dpi_support, setup_font_rendering
 
 # 导入GUI模块
 from gui import WelcomeTab, TextEditorTab, SettingsTab
@@ -233,8 +239,14 @@ class MainWindow(QMainWindow):
 
 def main():
     """主函数"""
+    # 设置高DPI支持（在创建QApplication之前）
+    setup_high_dpi_support()
+
     # 创建应用程序实例
     app = QApplication(sys.argv)
+
+    # 设置字体渲染优化
+    setup_font_rendering(app)
 
     # 设置应用程序属性
     app.setApplicationName(app_config.app_name)

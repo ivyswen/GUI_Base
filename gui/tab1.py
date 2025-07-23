@@ -23,8 +23,9 @@ class WelcomeTab(BaseTab):
         # 欢迎标题
         welcome_label = QLabel("欢迎使用GUI Base Template!")
         welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        welcome_label.setStyleSheet("font-size: 18px; font-weight: bold; margin: 20px;")
-        
+        welcome_label.setStyleSheet("margin: 20px;")
+        self.apply_title_font(welcome_label)
+
         # 描述文本
         description_label = QLabel(
             "这是一个基础的GUI程序模板，包含以下功能：\n\n"
@@ -32,11 +33,15 @@ class WelcomeTab(BaseTab):
             "• 完整的菜单栏系统\n"
             "• 多标签页界面\n"
             "• 应用程序和窗口图标\n"
-            "• 状态栏显示\n\n"
+            "• 状态栏显示\n"
+            "• 模块化架构设计\n"
+            "• 全局日志和配置系统\n"
+            "• 高DPI显示优化\n\n"
             "您可以基于此模板开发自己的GUI应用程序。"
         )
         description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_label.setStyleSheet("font-size: 12px; margin: 20px;")
+        description_label.setStyleSheet("margin: 20px;")
+        self.apply_body_font(description_label)
         
         # 快速操作按钮
         quick_actions_layout = QHBoxLayout()

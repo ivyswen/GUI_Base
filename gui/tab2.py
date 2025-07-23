@@ -21,7 +21,8 @@ class TextEditorTab(BaseTab):
         
         # 标题
         title_label = QLabel("文本编辑器")
-        title_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
+        title_label.setStyleSheet("margin: 10px;")
+        self.apply_subtitle_font(title_label)
         
         # 文本编辑区域
         self.text_edit = QTextEdit()
