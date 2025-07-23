@@ -11,6 +11,9 @@ dependencies = [
     "loguru>=0.7.0",
 ]
 
+[[tool.uv.index]]
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+
 [dependency-groups]
 dev = [
     "nuitka>=2.7.12",

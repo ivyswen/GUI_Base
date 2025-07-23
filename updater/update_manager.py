@@ -50,7 +50,7 @@ class UpdateManager(QObject):
     def check_for_updates_manual(self):
         """手动检查更新"""
         if self.parent_window:
-            self.parent_window.status_bar.showMessage("正在检查更新...", 0)
+            self.parent_window.statusBar().showMessage("正在检查更新...", 0)
         self.update_checker.check_for_updates()
     
     def check_for_updates_silent(self):
@@ -64,7 +64,7 @@ class UpdateManager(QObject):
     def on_check_finished(self):
         """检查完成"""
         if self.parent_window:
-            self.parent_window.status_bar.showMessage("就绪")
+            self.parent_window.statusBar().showMessage("就绪")
     
     def on_update_available(self, version_info: VersionInfo):
         """有更新可用"""
@@ -73,7 +73,7 @@ class UpdateManager(QObject):
         # logger.info(f"更新日志: {version_info.changelog[:100]}...")
 
         if self.parent_window:
-            self.parent_window.status_bar.showMessage("发现新版本", 3000)
+            self.parent_window.statusBar().showMessage("发现新版本", 3000)
 
         # 显示更新对话框
         self.show_update_dialog(version_info)
@@ -92,7 +92,7 @@ class UpdateManager(QObject):
     def on_check_error(self, error_msg: str):
         """检查更新出错"""
         if self.parent_window:
-            self.parent_window.status_bar.showMessage("检查更新失败", 3000)
+            self.parent_window.statusBar().showMessage("检查更新失败", 3000)
             
             # 只有手动检查时才显示错误对话框
             if hasattr(self, '_manual_check'):
@@ -423,7 +423,7 @@ class UpdateManager(QObject):
         # 显示状态消息
         if self.parent_window:
             skip_days = app_config.get("skip_duration_days", 30)
-            self.parent_window.status_bar.showMessage(f"已跳过版本 {version}（{skip_days}天内不再提醒）", 5000)
+            self.parent_window.statusBar().showMessage(f"已跳过版本 {version}（{skip_days}天内不再提醒）", 5000)
     
     def cleanup_download(self):
         """清理下载文件"""
@@ -464,7 +464,7 @@ class UpdateManager(QObject):
         logger.info("已清除所有跳过的版本")
 
         if self.parent_window:
-            self.parent_window.status_bar.showMessage("已清除所有跳过的版本", 3000)
+            self.parent_window.statusBar().showMessage("已清除所有跳过的版本", 3000)
 
     def remove_skipped_version(self, version: str) -> bool:
         """移除指定的跳过版本"""
@@ -473,6 +473,6 @@ class UpdateManager(QObject):
         if success:
             logger.info(f"已移除跳过版本: {version}")
             if self.parent_window:
-                self.parent_window.status_bar.showMessage(f"已移除跳过版本 {version}", 3000)
+                self.parent_window.statusBar().showMessage(f"已移除跳过版本 {version}", 3000)
 
         return success

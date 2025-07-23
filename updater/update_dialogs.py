@@ -16,6 +16,7 @@ from .update_checker import VersionInfo
 from .file_manager import FileManager
 from utils.logger import get_logger
 from utils.config import app_config
+from utils.styles import get_dialog_button_style
 
 logger = get_logger(__name__)
 
@@ -98,55 +99,7 @@ class UpdateDialog(QDialog):
     
     def get_button_style(self, style_type="default"):
         """获取按钮样式"""
-        base_style = """
-            QPushButton {
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 80px;
-                min-height: 32px;
-                border: 1px solid;
-            }
-            QPushButton:disabled {
-                background-color: #f8f8f8;
-                border: 1px solid #e0e0e0;
-                color: #a0a0a0;
-            }
-        """
-        
-        if style_type == "primary":
-            return base_style + """
-                QPushButton {
-                    background-color: #007acc;
-                    border-color: #005a9e;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #005a9e;
-                    border-color: #004578;
-                }
-                QPushButton:pressed {
-                    background-color: #004578;
-                    border-color: #003456;
-                }
-            """
-        else:  # default
-            return base_style + """
-                QPushButton {
-                    background-color: #f0f0f0;
-                    border-color: #c0c0c0;
-                    color: #333333;
-                }
-                QPushButton:hover {
-                    background-color: #e0e0e0;
-                    border-color: #a0a0a0;
-                }
-                QPushButton:pressed {
-                    background-color: #d0d0d0;
-                    border-color: #808080;
-                }
-            """
+        return get_dialog_button_style(style_type)
     
     def skip_version(self):
         """跳过此版本"""
@@ -223,33 +176,7 @@ class DownloadDialog(QDialog):
     
     def get_button_style(self, style_type="default"):
         """获取按钮样式"""
-        base_style = """
-            QPushButton {
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 80px;
-                min-height: 32px;
-                border: 1px solid;
-            }
-        """
-        
-        return base_style + """
-            QPushButton {
-                background-color: #f0f0f0;
-                border-color: #c0c0c0;
-                color: #333333;
-            }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-                border-color: #a0a0a0;
-            }
-            QPushButton:pressed {
-                background-color: #d0d0d0;
-                border-color: #808080;
-            }
-        """
+        return get_dialog_button_style(style_type)
     
     def setup_connections(self):
         """设置信号连接"""

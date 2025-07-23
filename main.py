@@ -165,9 +165,9 @@ class MainWindow(QMainWindow):
 
     def create_status_bar(self):
         """创建状态栏"""
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("就绪")
+        status_bar = QStatusBar()
+        self.setStatusBar(status_bar)
+        self.statusBar().showMessage("就绪")
 
     def center_window(self):
         """将窗口居中显示"""
@@ -198,23 +198,23 @@ class MainWindow(QMainWindow):
     # 菜单动作处理函数
     def new_file(self):
         """新建文件"""
-        self.status_bar.showMessage("新建文件", 2000)
+        self.statusBar().showMessage("新建文件", 2000)
 
     def open_file(self):
         """打开文件"""
-        self.status_bar.showMessage("打开文件", 2000)
+        self.statusBar().showMessage("打开文件", 2000)
 
     def copy_text(self):
         """复制文本"""
         if hasattr(self, 'text_edit') and self.text_edit:
             self.text_edit.copy()
-            self.status_bar.showMessage("已复制", 2000)
+            self.statusBar().showMessage("已复制", 2000)
 
     def paste_text(self):
         """粘贴文本"""
         if hasattr(self, 'text_edit') and self.text_edit:
             self.text_edit.paste()
-            self.status_bar.showMessage("已粘贴", 2000)
+            self.statusBar().showMessage("已粘贴", 2000)
 
     def show_about(self):
         """显示关于信息"""
@@ -234,7 +234,7 @@ class MainWindow(QMainWindow):
             self.update_manager.check_for_updates_manual_with_flag()
         else:
             app_logger.error("更新管理器未初始化")
-            self.status_bar.showMessage("更新功能不可用", 2000)
+            self.statusBar().showMessage("更新功能不可用", 2000)
 
 
 def main():
