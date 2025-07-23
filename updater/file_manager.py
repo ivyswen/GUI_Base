@@ -11,8 +11,8 @@ import urllib.error
 from pathlib import Path
 from typing import Optional, Callable
 from PySide6.QtCore import QObject, QThread, Signal
-from .config import app_config
-from .logger import get_logger
+from utils.logger import get_logger
+from utils.config import app_config
 
 logger = get_logger(__name__)
 

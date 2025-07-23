@@ -7,7 +7,11 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QAction
 
 # 导入自动更新相关模块
-from updater import UpdateManager, app_config, app_logger
+from updater import UpdateManager
+from utils import app_logger, app_config
+
+# 导入GUI模块
+from gui import WelcomeTab, TextEditorTab, SettingsTab
 
 
 class MainWindow(QMainWindow):
@@ -18,120 +22,16 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.center_window()
 
+        # 同步版本信息（从exe文件更新配置中的版本号）
+        self.sync_version_on_startup()
+
         # 初始化更新管理器
         self.update_manager = UpdateManager(self)
 
         # 启动时检查更新（延迟执行）
         self.update_manager.check_for_updates_on_startup()
 
-    def get_button_style(self, style_type="default"):
-        """获取按钮样式，确保视觉一致性
 
-        Args:
-            style_type: 样式类型，可选值：
-                - "default": 默认样式
-                - "primary": 主要按钮样式（蓝色）
-                - "success": 成功按钮样式（绿色）
-                - "warning": 警告按钮样式（橙色）
-                - "danger": 危险按钮样式（红色）
-        """
-        base_style = """
-            QPushButton {
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-size: 12px;
-                font-weight: 500;
-                min-width: 80px;
-                min-height: 28px;
-                border: 1px solid;
-            }
-            QPushButton:disabled {
-                background-color: #f8f8f8;
-                border: 1px solid #e0e0e0;
-                color: #a0a0a0;
-            }
-        """
-
-        if style_type == "primary":
-            return base_style + """
-                QPushButton {
-                    background-color: #007acc;
-                    border-color: #005a9e;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #005a9e;
-                    border-color: #004578;
-                }
-                QPushButton:pressed {
-                    background-color: #004578;
-                    border-color: #003456;
-                }
-            """
-        elif style_type == "success":
-            return base_style + """
-                QPushButton {
-                    background-color: #28a745;
-                    border-color: #1e7e34;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #1e7e34;
-                    border-color: #155724;
-                }
-                QPushButton:pressed {
-                    background-color: #155724;
-                    border-color: #0d4017;
-                }
-            """
-        elif style_type == "warning":
-            return base_style + """
-                QPushButton {
-                    background-color: #ffc107;
-                    border-color: #d39e00;
-                    color: #212529;
-                }
-                QPushButton:hover {
-                    background-color: #e0a800;
-                    border-color: #b08800;
-                }
-                QPushButton:pressed {
-                    background-color: #d39e00;
-                    border-color: #a08000;
-                }
-            """
-        elif style_type == "danger":
-            return base_style + """
-                QPushButton {
-                    background-color: #dc3545;
-                    border-color: #bd2130;
-                    color: white;
-                }
-                QPushButton:hover {
-                    background-color: #c82333;
-                    border-color: #a71e2a;
-                }
-                QPushButton:pressed {
-                    background-color: #bd2130;
-                    border-color: #9c1e2a;
-                }
-            """
-        else:  # default
-            return base_style + """
-                QPushButton {
-                    background-color: #f0f0f0;
-                    border-color: #c0c0c0;
-                    color: #333333;
-                }
-                QPushButton:hover {
-                    background-color: #e0e0e0;
-                    border-color: #a0a0a0;
-                }
-                QPushButton:pressed {
-                    background-color: #d0d0d0;
-                    border-color: #808080;
-                }
-            """
 
     def init_ui(self):
         """初始化用户界面"""
@@ -236,154 +136,26 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)
 
-        # 创建第一个标签页
-        self.create_tab1()
+        # 创建第一个标签页 - 欢迎页面
+        self.welcome_tab = WelcomeTab(self)
+        self.tab_widget.addTab(self.welcome_tab, "欢迎")
 
-        # 创建第二个标签页
-        self.create_tab2()
+        # 创建第二个标签页 - 文本编辑器
+        self.text_editor_tab = TextEditorTab(self)
+        self.tab_widget.addTab(self.text_editor_tab, "文本编辑")
 
-        # 创建第三个标签页
-        self.create_tab3()
+        # 保存文本编辑器的引用，供菜单功能使用
+        self.text_edit = self.text_editor_tab.get_text_edit()
 
-    def create_tab1(self):
-        """创建第一个标签页 - 欢迎页面"""
-        tab1 = QWidget()
-        layout = QVBoxLayout()
+        # 创建第三个标签页 - 设置
+        self.settings_tab = SettingsTab(self)
+        self.tab_widget.addTab(self.settings_tab, "设置")
 
-        # 欢迎标题
-        welcome_label = QLabel("欢迎使用GUI Base Template!")
-        welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        welcome_label.setStyleSheet("font-size: 18px; font-weight: bold; margin: 20px;")
 
-        # 描述文本
-        description_label = QLabel(
-            "这是一个基础的GUI程序模板，包含以下功能：\n\n"
-            "• 窗口自动居中显示\n"
-            "• 完整的菜单栏系统\n"
-            "• 多标签页界面\n"
-            "• 应用程序和窗口图标\n"
-            "• 状态栏显示\n\n"
-            "您可以基于此模板开发自己的GUI应用程序。"
-        )
-        description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_label.setStyleSheet("font-size: 12px; margin: 20px;")
 
-        # 快速操作按钮
-        quick_actions_layout = QHBoxLayout()
 
-        start_button = QPushButton("开始使用")
-        start_button.clicked.connect(self.start_using)
-        start_button.setStyleSheet(self.get_button_style("primary"))
 
-        help_button = QPushButton("查看帮助")
-        help_button.clicked.connect(self.show_help)
-        help_button.setStyleSheet(self.get_button_style("default"))
 
-        demo_button = QPushButton("运行演示")
-        demo_button.clicked.connect(self.run_demo)
-        demo_button.setStyleSheet(self.get_button_style("success"))
-
-        quick_actions_layout.addStretch()
-        quick_actions_layout.addWidget(start_button)
-        quick_actions_layout.addWidget(help_button)
-        quick_actions_layout.addWidget(demo_button)
-        quick_actions_layout.addStretch()
-
-        layout.addWidget(welcome_label)
-        layout.addWidget(description_label)
-        layout.addLayout(quick_actions_layout)
-        layout.addStretch()
-
-        tab1.setLayout(layout)
-        self.tab_widget.addTab(tab1, "欢迎")
-
-    def create_tab2(self):
-        """创建第二个标签页 - 文本编辑器"""
-        tab2 = QWidget()
-        layout = QVBoxLayout()
-
-        # 标题
-        title_label = QLabel("文本编辑器")
-        title_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
-
-        # 文本编辑区域
-        self.text_edit = QTextEdit()
-        self.text_edit.setPlaceholderText("在这里输入文本...")
-
-        # 按钮区域
-        button_layout = QHBoxLayout()
-
-        clear_button = QPushButton("清空")
-        clear_button.clicked.connect(self.clear_text)
-        clear_button.setStyleSheet(self.get_button_style("warning"))
-
-        sample_button = QPushButton("插入示例文本")
-        sample_button.clicked.connect(self.insert_sample_text)
-        sample_button.setStyleSheet(self.get_button_style("default"))
-
-        button_layout.addWidget(clear_button)
-        button_layout.addWidget(sample_button)
-        button_layout.addStretch()
-
-        layout.addWidget(title_label)
-        layout.addWidget(self.text_edit)
-        layout.addLayout(button_layout)
-
-        tab2.setLayout(layout)
-        self.tab_widget.addTab(tab2, "文本编辑")
-
-    def create_tab3(self):
-        """创建第三个标签页 - 设置"""
-        tab3 = QWidget()
-        layout = QVBoxLayout()
-
-        # 标题
-        title_label = QLabel("设置")
-        title_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
-
-        # 设置内容
-        settings_label = QLabel(
-            "这里可以添加各种设置选项：\n\n"
-            "• 主题设置\n"
-            "• 语言设置\n"
-            "• 字体设置\n"
-            "• 其他配置选项\n\n"
-            "根据您的需求自定义此页面。"
-        )
-        settings_label.setStyleSheet("font-size: 12px; margin: 20px;")
-
-        # 示例设置按钮
-        button_layout = QHBoxLayout()
-
-        theme_button = QPushButton("切换主题")
-        theme_button.clicked.connect(self.toggle_theme)
-        theme_button.setStyleSheet(self.get_button_style("primary"))
-
-        language_button = QPushButton("语言设置")
-        language_button.clicked.connect(self.language_settings)
-        language_button.setStyleSheet(self.get_button_style("default"))
-
-        font_button = QPushButton("字体设置")
-        font_button.clicked.connect(self.font_settings)
-        font_button.setStyleSheet(self.get_button_style("default"))
-
-        reset_button = QPushButton("重置设置")
-        reset_button.clicked.connect(self.reset_settings)
-        reset_button.setStyleSheet(self.get_button_style("danger"))
-
-        button_layout.addWidget(theme_button)
-        button_layout.addWidget(language_button)
-        button_layout.addWidget(font_button)
-        button_layout.addWidget(reset_button)
-        button_layout.addStretch()
-
-        layout.addWidget(title_label)
-        layout.addWidget(settings_label)
-        layout.addLayout(button_layout)
-        layout.addStretch()
-
-        tab3.setLayout(layout)
-        self.tab_widget.addTab(tab3, "设置")
 
     def create_status_bar(self):
         """创建状态栏"""
@@ -406,6 +178,17 @@ class MainWindow(QMainWindow):
         # 移动窗口到居中位置
         self.move(x, y)
 
+    def sync_version_on_startup(self):
+        """启动时同步版本信息"""
+        try:
+            # 尝试从exe文件更新配置中的版本号
+            if app_config.update_version_from_exe():
+                app_logger.info(f"版本信息已同步: {app_config.current_version}")
+            else:
+                app_logger.debug("无需同步版本信息或同步失败")
+        except Exception as e:
+            app_logger.error(f"同步版本信息时发生错误: {str(e)}")
+
     # 菜单动作处理函数
     def new_file(self):
         """新建文件"""
@@ -417,13 +200,13 @@ class MainWindow(QMainWindow):
 
     def copy_text(self):
         """复制文本"""
-        if hasattr(self, 'text_edit'):
+        if hasattr(self, 'text_edit') and self.text_edit:
             self.text_edit.copy()
             self.status_bar.showMessage("已复制", 2000)
 
     def paste_text(self):
         """粘贴文本"""
-        if hasattr(self, 'text_edit'):
+        if hasattr(self, 'text_edit') and self.text_edit:
             self.text_edit.paste()
             self.status_bar.showMessage("已粘贴", 2000)
 
@@ -436,85 +219,7 @@ class MainWindow(QMainWindow):
                          "基于PySide6开发\n\n"
                          f"组织: {app_config.organization_name}")
 
-    # 标签页功能函数
-    def clear_text(self):
-        """清空文本"""
-        self.text_edit.clear()
-        self.status_bar.showMessage("文本已清空", 2000)
 
-    def insert_sample_text(self):
-        """插入示例文本"""
-        sample_text = (
-            "这是一个示例文本。\n\n"
-            "您可以在这里编辑文本，使用菜单栏的复制和粘贴功能。\n\n"
-            "这个GUI模板包含了基础的界面元素，"
-            "您可以根据需要进行扩展和修改。"
-        )
-        self.text_edit.setPlainText(sample_text)
-        self.status_bar.showMessage("已插入示例文本", 2000)
-
-    # 欢迎页面功能函数
-    def start_using(self):
-        """开始使用 - 切换到文本编辑标签页"""
-        self.tab_widget.setCurrentIndex(1)  # 切换到文本编辑标签页
-        self.status_bar.showMessage("已切换到文本编辑页面", 2000)
-
-    def show_help(self):
-        """显示帮助信息"""
-        from PySide6.QtWidgets import QMessageBox
-        help_text = (
-            "GUI Base Template 使用帮助\n\n"
-            "1. 欢迎页面：查看程序介绍和快速操作\n"
-            "2. 文本编辑：进行文本编辑和操作\n"
-            "3. 设置页面：配置程序选项\n\n"
-            "使用菜单栏可以进行文件操作和其他功能。\n"
-            "状态栏会显示当前操作的反馈信息。"
-        )
-        QMessageBox.information(self, "使用帮助", help_text)
-
-    def run_demo(self):
-        """运行演示"""
-        self.tab_widget.setCurrentIndex(1)  # 切换到文本编辑标签页
-        # 插入演示文本
-        demo_text = (
-            "🎉 欢迎体验GUI Base Template演示！\n\n"
-            "这是一个功能完整的GUI程序模板，包含：\n\n"
-            "✅ 现代化的用户界面设计\n"
-            "✅ 完整的菜单系统\n"
-            "✅ 多标签页布局\n"
-            "✅ 统一的按钮样式\n"
-            "✅ 状态栏反馈\n"
-            "✅ 图标支持\n\n"
-            "您可以基于此模板快速开发自己的应用程序！\n\n"
-            "试试使用菜单栏的功能，或者点击下方的按钮。"
-        )
-        if hasattr(self, 'text_edit'):
-            self.text_edit.setPlainText(demo_text)
-        self.status_bar.showMessage("演示已启动，请查看文本编辑页面", 3000)
-
-    # 设置页面功能函数
-    def toggle_theme(self):
-        """切换主题"""
-        self.status_bar.showMessage("主题切换功能待实现", 2000)
-
-    def language_settings(self):
-        """语言设置"""
-        self.status_bar.showMessage("语言设置功能待实现", 2000)
-
-    def font_settings(self):
-        """字体设置"""
-        self.status_bar.showMessage("字体设置功能待实现", 2000)
-
-    def reset_settings(self):
-        """重置设置"""
-        from PySide6.QtWidgets import QMessageBox
-        reply = QMessageBox.question(self, "确认重置",
-                                   "确定要重置所有设置吗？",
-                                   QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        if reply == QMessageBox.StandardButton.Yes:
-            self.status_bar.showMessage("设置已重置", 2000)
-        else:
-            self.status_bar.showMessage("取消重置", 2000)
 
     def check_for_updates(self):
         """检查更新"""

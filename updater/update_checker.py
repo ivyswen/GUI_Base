@@ -9,8 +9,8 @@ import urllib.error
 from typing import Dict, Any, Optional, Tuple
 from packaging import version
 from PySide6.QtCore import QObject, QThread, Signal
-from .config import app_config
-from .logger import get_logger
+from utils.logger import get_logger
+from utils.config import app_config
 
 logger = get_logger(__name__)
 
@@ -128,7 +128,7 @@ class UpdateCheckWorker(QThread):
             # 比较版本
             if self._is_newer_version(version_info.version, self.current_version):
                 # 检查版本是否被跳过
-                from .config import app_config
+                from utils.config import app_config
                 if app_config.is_version_skipped(version_info.version):
                     logger.info(f"发现新版本 {version_info.version}，但已被用户跳过")
                     self.no_update.emit()

@@ -337,10 +337,14 @@ class AppConfig:
         self.set("skipped_versions", skipped)
         self.save_config()
 
-        # 记录日志
-        from .logger import get_logger
-        logger = get_logger(__name__)
-        logger.info(f"跳过版本 {version}，有效期 {duration} 天")
+        # 记录日志（延迟导入避免循环依赖）
+        try:
+            from utils.logger import get_logger
+            logger = get_logger(__name__)
+            logger.info(f"跳过版本 {version}，有效期 {duration} 天")
+        except ImportError:
+            # 如果导入失败，使用print作为备选
+            print(f"跳过版本 {version}，有效期 {duration} 天")
 
     def is_version_skipped(self, version: str) -> bool:
         """

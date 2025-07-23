@@ -4,10 +4,8 @@
 """
 
 import sys
-import os
 from pathlib import Path
 from loguru import logger
-from .config import app_config
 
 
 def setup_logger():
@@ -84,8 +82,13 @@ def setup_logger():
         filter=lambda record: "update" in (record.get("name", "") or "").lower() or "update" in record["message"].lower()
     )
     
-    # 记录启动信息
-    logger.info(f"应用程序启动: {app_config.app_name} v{app_config.current_version}")
+    # 记录启动信息（延迟导入app_config避免循环依赖）
+    try:
+        from updater.config import app_config
+        logger.info(f"应用程序启动: {app_config.app_name} v{app_config.current_version}")
+    except ImportError:
+        logger.info("应用程序启动")
+
     logger.info(f"日志目录: {log_dir}")
     logger.info(f"运行环境: {'生产环境 (exe)' if is_compiled else '开发环境'}")
     logger.info(f"日志级别: {file_level}")

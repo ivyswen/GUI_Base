@@ -14,8 +14,8 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QFont
 from .update_checker import VersionInfo
 from .file_manager import FileManager
-from .config import app_config
-from .logger import get_logger
+from utils.logger import get_logger
+from utils.config import app_config
 
 logger = get_logger(__name__)
 

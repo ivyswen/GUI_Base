@@ -11,8 +11,8 @@ from PySide6.QtCore import QObject, QTimer
 from .update_checker import UpdateChecker, VersionInfo
 from .update_dialogs import UpdateDialog, DownloadDialog
 from .file_manager import FileManager
-from .config import app_config
-from .logger import get_logger
+from utils.logger import get_logger
+from utils.config import app_config
 
 logger = get_logger(__name__)
 
@@ -176,6 +176,9 @@ class UpdateManager(QObject):
                         "没有找到更新程序，且服务器未提供更新程序下载链接。"
                     )
                     return
+
+            # 记录即将更新的版本信息
+            self.log_update_attempt(version_info)
 
             # 启动更新程序
             logger.info("准备启动更新程序")
@@ -373,7 +376,43 @@ class UpdateManager(QObject):
         logger.info(f"应用目录: {app_dir_str}, 可执行文件: {app_exe_name}")
 
         return app_dir_str, app_exe_name
-    
+
+    def log_update_attempt(self, version_info: VersionInfo):
+        """记录更新尝试信息"""
+        try:
+            logger.info(f"准备更新到版本: {version_info.version}")
+            logger.info(f"当前版本: {app_config.current_version}")
+            logger.info(f"更新包URL: {version_info.url}")
+            logger.info(f"更新程序URL: {version_info.update_exe_url}")
+
+            # 记录更新尝试到专用日志
+            update_logger = get_logger("update_attempt")
+            update_logger.info(f"更新尝试开始 - 从 {app_config.current_version} 到 {version_info.version}")
+
+        except Exception as e:
+            logger.error(f"记录更新尝试信息时发生错误: {str(e)}")
+
+    def sync_version_after_update(self, new_version: str):
+        """更新完成后同步版本信息
+
+        注意：此方法主要用于记录和日志，实际的版本同步在应用程序重启时进行
+
+        Args:
+            new_version: 新版本号
+        """
+        try:
+            logger.info(f"更新完成，新版本: {new_version}")
+
+            # 记录更新完成到专用日志
+            update_logger = get_logger("update_complete")
+            update_logger.success(f"更新完成 - 版本更新到 {new_version}")
+
+            # 注意：实际的config.json版本同步会在应用程序重启时通过
+            # sync_version_on_startup() 方法自动进行
+
+        except Exception as e:
+            logger.error(f"同步版本信息时发生错误: {str(e)}")
+
     def skip_version(self, version: str):
         """跳过指定版本"""
         logger.info(f"用户选择跳过版本: {version}")
