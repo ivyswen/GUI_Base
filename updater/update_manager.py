@@ -14,6 +14,7 @@ from .file_manager import FileManager
 from utils.logger import get_logger
 from utils.config import app_config
 
+# 创建日志记录器
 logger = get_logger(__name__)
 
 
@@ -55,7 +56,22 @@ class UpdateManager(QObject):
     
     def check_for_updates_silent(self):
         """静默检查更新（不显示状态）"""
+        # 首先同步版本信息
+        self.sync_version_on_startup()
+
+        # 然后检查更新
         self.update_checker.check_for_updates()
+
+    def sync_version_on_startup(self):
+        """启动时同步版本信息"""
+        try:
+            # 尝试从exe文件更新配置中的版本号
+            if app_config.update_version_from_exe():
+                logger.info(f"版本信息已同步: {app_config.current_version}")
+            else:
+                logger.debug("无需同步版本信息或同步失败")
+        except Exception as e:
+            logger.error(f"同步版本信息时发生错误: {str(e)}")
     
     def on_check_started(self):
         """检查开始"""
@@ -298,7 +314,13 @@ class UpdateManager(QObject):
 
             # 启动更新程序
             logger.info("启动更新程序...")
-            os.system(f'start "" {cmd}')
+            # 使用subprocess.Popen替代os.system，避免显示命令行窗口
+            import subprocess
+            subprocess.Popen(
+                cmd,
+                shell=True,
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+            )
             logger.success("更新程序已启动")
 
             # 退出当前应用程序

@@ -55,6 +55,12 @@ def get_button_style(style_type="default"):
                 background-color: #004085;
                 border-color: #002752;
             }
+            QPushButton:disabled {
+                background-color: #6c9bd1;
+                border: 1px solid #5a8bc4;
+                color: #ffffff;
+                opacity: 0.6;
+            }
         """
     elif style_type == "secondary":
         return base_style + """
@@ -87,6 +93,12 @@ def get_button_style(style_type="default"):
                 background-color: #155724;
                 border-color: #0d4017;
             }
+            QPushButton:disabled {
+                background-color: #7bc97e;
+                border: 1px solid #6bb76e;
+                color: #ffffff;
+                opacity: 0.6;
+            }
         """
     elif style_type == "info":
         return base_style + """
@@ -103,6 +115,12 @@ def get_button_style(style_type="default"):
                 background-color: #0c5460;
                 border-color: #062c33;
             }
+            QPushButton:disabled {
+                background-color: #7bc3d1;
+                border: 1px solid #6bb6c7;
+                color: #ffffff;
+                opacity: 0.6;
+            }
         """
     elif style_type == "warning":
         return base_style + """
@@ -118,6 +136,12 @@ def get_button_style(style_type="default"):
             QPushButton:pressed {
                 background-color: #d39e00;
                 border-color: #a08000;
+            }
+            QPushButton:disabled {
+                background-color: #ffdb6b;
+                border: 1px solid #e6c757;
+                color: #6c757d;
+                opacity: 0.6;
             }
         """
     elif style_type == "danger":
@@ -246,6 +270,12 @@ def get_button_style(style_type="default"):
             QPushButton:pressed {
                 background-color: #dee2e6;
                 border-color: #6c757d;
+            }
+            QPushButton:disabled {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                color: #6c757d;
+                opacity: 0.6;
             }
         """
 

@@ -28,9 +28,6 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.center_window()
 
-        # 同步版本信息（从exe文件更新配置中的版本号）
-        self.sync_version_on_startup()
-
         # 初始化更新管理器
         self.update_manager = UpdateManager(self)
 
@@ -43,7 +40,8 @@ class MainWindow(QMainWindow):
         """初始化用户界面"""
         # 设置窗口基本属性
         self.setWindowTitle(app_config.app_name)
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1024, 768)
+        self.setMinimumSize(1000, 750)
 
         # 设置窗口图标
         self.set_window_icon()
@@ -183,17 +181,6 @@ class MainWindow(QMainWindow):
 
         # 移动窗口到居中位置
         self.move(x, y)
-
-    def sync_version_on_startup(self):
-        """启动时同步版本信息"""
-        try:
-            # 尝试从exe文件更新配置中的版本号
-            if app_config.update_version_from_exe():
-                app_logger.info(f"版本信息已同步: {app_config.current_version}")
-            else:
-                app_logger.debug("无需同步版本信息或同步失败")
-        except Exception as e:
-            app_logger.error(f"同步版本信息时发生错误: {str(e)}")
 
     # 菜单动作处理函数
     def new_file(self):

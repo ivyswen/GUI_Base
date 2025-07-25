@@ -79,7 +79,8 @@ def get_exe_version_alternative() -> Optional[str]:
                 ['powershell', '-Command', cmd],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
             )
 
             if result.returncode == 0 and result.stdout.strip():
