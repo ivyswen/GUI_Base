@@ -30,7 +30,7 @@ def get_button_style(style_type="default"):
             font-size: 12px;
             font-weight: 500;
             min-width: 60px;
-            min-height: 24px;
+            min-height: 20px;
             border: 1px solid;
         }
         QPushButton:disabled {
@@ -293,7 +293,7 @@ def get_dialog_button_style(style_type="default"):
             font-size: 12px;
             font-weight: 500;
             min-width: 80px;
-            min-height: 32px;
+            min-height: 24px;
             border: 1px solid;
         }
         QPushButton:disabled {
