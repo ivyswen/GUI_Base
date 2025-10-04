@@ -13,7 +13,7 @@ from PySide6.QtGui import QIcon, QAction, QFont
 
 # 导入自动更新相关模块
 from updater import UpdateManager
-from utils import app_logger, app_config, setup_exception_handler, setup_theme_manager, setup_notification_manager, get_notification_manager, SystemTray
+from utils import app_logger, app_config, setup_exception_handler, setup_theme_manager, setup_notification_manager, get_notification_manager, SystemTray, setup_plugin_manager, get_plugin_manager
 from utils.display import setup_high_dpi_support, setup_font_rendering
 
 # 导入GUI模块
@@ -25,6 +25,12 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # 初始化插件系统（在UI之前）
+        self.plugin_manager = get_plugin_manager()
+        self.plugin_manager.set_main_window(self)
+        self.plugin_manager.load_all_plugins()
+
         self.init_ui()
         self.center_window()
 
@@ -360,6 +366,9 @@ def main():
 
     # 设置通知管理器
     setup_notification_manager()
+
+    # 设置插件管理器
+    setup_plugin_manager()
 
     # 创建主窗口
     window = MainWindow()

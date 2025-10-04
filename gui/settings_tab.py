@@ -13,6 +13,7 @@ from .base_tab import BaseTab
 from utils.theme import get_theme_manager, ThemeMode
 from utils.config import app_config
 from utils.styles import get_group_box_style, get_button_style, get_combobox_style
+from utils.plugin_manager import get_plugin_manager
 
 
 class SettingsTab(BaseTab):
@@ -54,7 +55,10 @@ class SettingsTab(BaseTab):
         
         # 高级设置
         layout.addWidget(self.create_advanced_group())
-        
+
+        # 插件管理
+        layout.addWidget(self.create_plugin_group())
+
         # 操作按钮
         layout.addWidget(self.create_action_buttons())
         
@@ -195,7 +199,55 @@ class SettingsTab(BaseTab):
         
         group.setLayout(layout)
         return group
-    
+
+    def create_plugin_group(self):
+        """创建插件管理分组"""
+        group = QGroupBox("插件管理")
+        group.setStyleSheet(get_group_box_style())
+        layout = QVBoxLayout()
+
+        try:
+            plugin_manager = get_plugin_manager()
+            plugins = plugin_manager.get_all_plugins()
+
+            if plugins:
+                for plugin_name, plugin in plugins.items():
+                    metadata = plugin.get_metadata()
+
+                    # 插件信息布局
+                    plugin_layout = QHBoxLayout()
+
+                    # 插件名称和版本
+                    info_label = QLabel(f"{metadata.name} v{metadata.version}")
+                    info_label.setStyleSheet("font-weight: bold;")
+                    plugin_layout.addWidget(info_label)
+
+                    plugin_layout.addStretch()
+
+                    # 启用/禁用按钮
+                    toggle_btn = QPushButton("禁用" if plugin.is_enabled() else "启用")
+                    toggle_btn.setStyleSheet(get_button_style("default"))
+                    toggle_btn.clicked.connect(lambda checked, name=plugin_name: self.toggle_plugin(name))
+                    plugin_layout.addWidget(toggle_btn)
+
+                    layout.addLayout(plugin_layout)
+
+                    # 插件描述
+                    desc_label = QLabel(metadata.description)
+                    desc_label.setStyleSheet("color: gray; font-size: 10px; margin-left: 10px;")
+                    layout.addWidget(desc_label)
+            else:
+                no_plugins_label = QLabel("未发现任何插件")
+                no_plugins_label.setStyleSheet("color: gray;")
+                layout.addWidget(no_plugins_label)
+        except Exception as e:
+            error_label = QLabel(f"加载插件列表失败: {e}")
+            error_label.setStyleSheet("color: red;")
+            layout.addWidget(error_label)
+
+        group.setLayout(layout)
+        return group
+
     def create_action_buttons(self):
         """创建操作按钮"""
         group = QGroupBox("配置管理")
@@ -301,6 +353,29 @@ class SettingsTab(BaseTab):
         app_config._config["advanced"]["debug_mode"] = checked
         app_config.save_config()
         self.update_status_bar(f"调试模式: {'已启用' if checked else '已禁用'}（重启后生效）", 2000)
+
+    def toggle_plugin(self, plugin_name: str):
+        """切换插件启用/禁用状态"""
+        try:
+            plugin_manager = get_plugin_manager()
+            plugin = plugin_manager.get_plugin(plugin_name)
+
+            if plugin:
+                if plugin.is_enabled():
+                    if plugin_manager.disable_plugin(plugin_name):
+                        self.update_status_bar(f"插件 {plugin_name} 已禁用", 2000)
+                    else:
+                        self.update_status_bar(f"禁用插件 {plugin_name} 失败", 2000)
+                else:
+                    if plugin_manager.enable_plugin(plugin_name):
+                        self.update_status_bar(f"插件 {plugin_name} 已启用", 2000)
+                    else:
+                        self.update_status_bar(f"启用插件 {plugin_name} 失败", 2000)
+
+                # 刷新插件列表（简单方式：重新加载整个设置页面）
+                # 在实际应用中，应该只更新插件部分
+        except Exception as e:
+            self.update_status_bar(f"切换插件状态失败: {e}", 3000)
     
     def on_reset_config(self):
         """重置配置"""

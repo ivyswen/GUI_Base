@@ -31,7 +31,7 @@
         "minimize_to_tray": true,
         "close_to_tray": false,
         "start_minimized": false,
-        "confirm_on_exit": true
+        "confirm_on_exit": false
     },
     "advanced": {
         "log_level": "INFO",
