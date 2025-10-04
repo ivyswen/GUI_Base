@@ -20,6 +20,8 @@
 - **通知/消息系统**: Toast通知、多种类型、消息历史、淡入淡出动画
 - **系统托盘**: 托盘图标、托盘菜单、最小化到托盘、启动时最小化
 - **插件系统**: 插件发现、动态加载、启用/禁用、插件管理UI
+- **文件操作工具集**: 文件/目录操作、哈希计算、文件信息获取
+- **拖放文件支持**: 拖放文件/目录、文件类型过滤、单/多文件支持
 
 ### 📋 界面组件
 - **欢迎页面**: 程序介绍和功能说明，包含快速操作按钮
@@ -784,6 +786,243 @@ def get_menu_items(self):
 3. **资源清理**：在 `cleanup()` 方法中释放资源
 4. **配置管理**：使用 `get_config()` 和 `set_config()` 管理配置
 5. **通知集成**：使用 `utils.notification.get_notification_manager()` 显示通知
+
+## 📁 文件操作工具集（新增）
+
+### 功能概述
+完整的文件和目录操作工具集，提供常用的文件操作功能：
+
+- ✅ **目录操作**：创建、删除、检查、列出
+- ✅ **文件操作**：复制、移动、删除、读写
+- ✅ **文件信息**：大小、扩展名、文件名
+- ✅ **哈希计算**：MD5、SHA1、SHA256等
+- ✅ **文件搜索**：支持通配符和递归搜索
+- ✅ **格式化**：文件大小格式化
+
+### 主要功能
+
+#### 目录操作
+```python
+from utils import file_utils
+
+# 创建目录
+file_utils.ensure_dir("my_directory")
+
+# 检查目录是否存在
+exists = file_utils.dir_exists("my_directory")
+
+# 列出文件
+files = file_utils.list_files("my_directory")
+
+# 递归列出所有文件
+all_files = file_utils.list_files("my_directory", recursive=True)
+
+# 列出特定类型文件
+txt_files = file_utils.list_files("my_directory", pattern="*.txt")
+
+# 列出子目录
+dirs = file_utils.list_directories("my_directory")
+
+# 删除目录
+file_utils.delete_directory("my_directory", recursive=True)
+```
+
+#### 文件操作
+```python
+# 检查文件是否存在
+exists = file_utils.file_exists("file.txt")
+
+# 读取文本文件
+content = file_utils.read_text_file("file.txt")
+
+# 写入文本文件
+file_utils.write_text_file("file.txt", "内容")
+
+# 复制文件
+file_utils.copy_file("source.txt", "dest.txt")
+
+# 移动文件
+file_utils.move_file("source.txt", "dest.txt")
+
+# 删除文件
+file_utils.delete_file("file.txt")
+```
+
+#### 文件信息
+```python
+# 获取文件大小
+size = file_utils.get_file_size("file.txt")
+
+# 格式化文件大小
+formatted = file_utils.format_file_size(1024)  # "1.00 KB"
+
+# 获取文件名
+name = file_utils.get_file_name("path/to/file.txt")  # "file.txt"
+name_no_ext = file_utils.get_file_name("path/to/file.txt", with_extension=False)  # "file"
+
+# 获取文件扩展名
+ext = file_utils.get_file_extension("file.txt")  # ".txt"
+```
+
+#### 哈希计算
+```python
+# 计算 MD5
+md5 = file_utils.calculate_file_hash("file.txt", "md5")
+
+# 计算 SHA256
+sha256 = file_utils.calculate_file_hash("file.txt", "sha256")
+```
+
+### 示例
+
+运行演示程序：
+```bash
+python examples/file_utils_demo.py
+```
+
+演示内容包括：
+- 基本文件操作（创建、读写、获取信息）
+- 文件复制、移动、删除
+- 目录操作和文件搜索
+- 哈希计算
+
+## 🎯 拖放文件支持（新增）
+
+### 功能概述
+完整的拖放文件支持，允许用户将文件拖放到应用程序中：
+
+- ✅ **拖放文件**：支持拖放文件到窗口
+- ✅ **拖放目录**：可选择是否允许拖放目录
+- ✅ **文件类型过滤**：限制允许的文件扩展名
+- ✅ **单/多文件**：支持单文件或多文件拖放
+- ✅ **视觉反馈**：拖动时显示视觉提示
+- ✅ **混入类**：可以轻松添加到任何 QWidget
+
+### 使用方法
+
+#### 方法1：使用便捷函数创建拖放区域
+```python
+from utils import create_drag_drop_area
+
+# 创建拖放区域
+drop_area = create_drag_drop_area(
+    on_files_dropped=handle_files,
+    allowed_extensions=['.txt', '.pdf'],  # 可选：限制文件类型
+    allow_directories=False,              # 可选：是否允许目录
+    multiple_files=True,                  # 可选：是否允许多个文件
+    drop_hint="拖放文件到这里",            # 可选：提示文本
+    min_height=100                        # 可选：最小高度
+)
+
+def handle_files(files):
+    print(f"收到文件: {files}")
+```
+
+#### 方法2：使用 DragDropWidget
+```python
+from utils import DragDropWidget
+
+widget = DragDropWidget()
+widget.setup_drag_drop(on_files_dropped=handle_files)
+widget.set_drop_hint("拖放文件到这里")
+```
+
+#### 方法3：使用 DragDropMixin 添加到现有组件
+```python
+from PySide6.QtWidgets import QWidget
+from utils import DragDropMixin
+
+class MyWidget(QWidget, DragDropMixin):
+    def __init__(self):
+        super().__init__()
+        self.setup_drag_drop(
+            on_files_dropped=self.handle_files,
+            allowed_extensions=['.txt', '.py']
+        )
+
+    def handle_files(self, files):
+        print(f"收到文件: {files}")
+```
+
+### 配置选项
+
+#### allowed_extensions
+限制允许的文件扩展名：
+```python
+# 只允许文本文件
+allowed_extensions=['.txt', '.md', '.log']
+
+# 只允许图片文件
+allowed_extensions=['.jpg', '.png', '.gif']
+
+# 允许所有文件
+allowed_extensions=None
+```
+
+#### allow_directories
+是否允许拖放目录：
+```python
+# 允许目录
+allow_directories=True
+
+# 不允许目录（默认）
+allow_directories=False
+```
+
+#### multiple_files
+是否允许多个文件：
+```python
+# 允许多个文件（默认）
+multiple_files=True
+
+# 只允许单个文件
+multiple_files=False
+```
+
+### 示例
+
+#### 运行演示程序
+```bash
+python examples/drag_drop_demo.py
+```
+
+演示程序包含4个示例：
+1. **基本拖放**：允许所有文件
+2. **限制文件类型**：仅允许 .txt, .py, .json
+3. **单文件拖放**：只接受一个文件
+4. **允许目录**：可以拖放目录
+
+#### 实际应用示例
+在欢迎页面（Tab1）中集成了拖放功能：
+- 拖放文件到指定区域
+- 自动显示文件信息（名称、大小、扩展名、路径）
+- 显示通知反馈
+
+### API 参考
+
+#### DragDropMixin
+混入类，为任何 QWidget 添加拖放功能：
+- `setup_drag_drop(on_files_dropped, allowed_extensions, allow_directories, multiple_files)` - 设置拖放功能
+- `files_dropped` - 信号，文件拖放时触发
+
+#### DragDropWidget
+支持拖放的 QWidget：
+- 继承自 QWidget 和 DragDropMixin
+- `set_drop_hint(hint)` - 设置提示文本
+- 自动绘制拖放区域边框和提示
+
+#### create_drag_drop_area()
+便捷函数，快速创建拖放区域：
+- 返回配置好的 DragDropWidget
+- 支持所有配置选项
+
+### 最佳实践
+
+1. **文件验证**：使用 `allowed_extensions` 限制文件类型
+2. **错误处理**：在回调函数中处理异常
+3. **用户反馈**：使用通知或状态栏提供反馈
+4. **文件信息**：使用 `file_utils` 获取文件信息
+5. **视觉提示**：设置清晰的 `drop_hint` 文本
 
 ## 扩展建议
 

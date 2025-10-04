@@ -3,11 +3,12 @@
 包含欢迎信息、程序介绍和快速操作功能
 """
 
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QPushButton)
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QTextEdit)
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 from .base_tab import BaseTab
 from utils.notification import get_notification_manager
+from utils import create_drag_drop_area, file_utils
 
 
 class WelcomeTab(BaseTab):
@@ -69,12 +70,16 @@ class WelcomeTab(BaseTab):
         quick_actions_layout.addWidget(demo_button)
         quick_actions_layout.addWidget(test_notification_button)
         quick_actions_layout.addStretch()
-        
+
+        # 拖放文件区域
+        drag_drop_group = self.create_drag_drop_area()
+
         layout.addWidget(welcome_label)
         layout.addWidget(description_label)
         layout.addLayout(quick_actions_layout)
+        layout.addWidget(drag_drop_group)
         layout.addStretch()
-        
+
         self.setLayout(layout)
     
     def start_using(self):
@@ -137,3 +142,52 @@ class WelcomeTab(BaseTab):
             self.update_status_bar("通知测试已启动", 2000)
         except Exception as e:
             self.update_status_bar(f"通知测试失败: {e}", 3000)
+
+    def create_drag_drop_area(self):
+        """创建拖放文件区域"""
+        group = QGroupBox("拖放文件演示")
+        layout = QVBoxLayout()
+
+        # 拖放区域
+        drop_area = create_drag_drop_area(
+            on_files_dropped=self.handle_dropped_files,
+            drop_hint="拖放文件到这里查看文件信息",
+            min_height=100
+        )
+        layout.addWidget(drop_area)
+
+        # 文件信息显示区域
+        self.file_info_text = QTextEdit()
+        self.file_info_text.setReadOnly(True)
+        self.file_info_text.setMaximumHeight(100)
+        self.file_info_text.setPlaceholderText("拖放文件后，这里会显示文件信息...")
+        layout.addWidget(self.file_info_text)
+
+        group.setLayout(layout)
+        return group
+
+    def handle_dropped_files(self, files: list):
+        """处理拖放的文件"""
+        try:
+            info_lines = [f"收到 {len(files)} 个文件:\n"]
+
+            for file_path in files:
+                name = file_utils.get_file_name(file_path)
+                size = file_utils.get_file_size(file_path)
+                formatted_size = file_utils.format_file_size(size)
+                ext = file_utils.get_file_extension(file_path)
+
+                info_lines.append(f"📄 {name}")
+                info_lines.append(f"   大小: {formatted_size}")
+                info_lines.append(f"   扩展名: {ext}")
+                info_lines.append(f"   路径: {file_path}")
+                info_lines.append("")
+
+            self.file_info_text.setPlainText("\n".join(info_lines))
+            self.update_status_bar(f"已接收 {len(files)} 个文件", 2000)
+
+            # 显示通知
+            notification_manager = get_notification_manager()
+            notification_manager.success("文件已接收", f"成功接收 {len(files)} 个文件")
+        except Exception as e:
+            self.update_status_bar(f"处理文件失败: {e}", 3000)

@@ -10,6 +10,8 @@ from .theme import setup_theme_manager, get_theme_manager
 from .notification import setup_notification_manager, get_notification_manager
 from .system_tray import SystemTray
 from .plugin_manager import setup_plugin_manager, get_plugin_manager
+from . import file_utils
+from .drag_drop import DragDropMixin, DragDropWidget, create_drag_drop_area
 
 __all__ = [
     'get_logger',
@@ -24,7 +26,11 @@ __all__ = [
     'get_notification_manager',
     'SystemTray',
     'setup_plugin_manager',
-    'get_plugin_manager'
+    'get_plugin_manager',
+    'file_utils',
+    'DragDropMixin',
+    'DragDropWidget',
+    'create_drag_drop_area'
 ]
 
 __version__ = '1.0.0'
