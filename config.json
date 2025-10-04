@@ -8,6 +8,34 @@
     "update_check_timeout": 10,
     "download_timeout": 300,
     "temp_dir_name": "app_update",
-    "skipped_versions": {},
-    "skip_duration_days": 30
+    "skipped_versions": {
+        "2.0.0": 1762129069.8001878
+    },
+    "skip_duration_days": 30,
+    "exception_handler": {
+        "enabled": true,
+        "show_dialog": true,
+        "save_report": true,
+        "report_dir": "error_reports"
+    },
+    "theme": {
+        "mode": "auto"
+    },
+    "appearance": {
+        "font_size": 11,
+        "window_width": 1024,
+        "window_height": 768,
+        "remember_window_size": true
+    },
+    "behavior": {
+        "minimize_to_tray": true,
+        "close_to_tray": false,
+        "start_minimized": false,
+        "confirm_on_exit": true
+    },
+    "advanced": {
+        "log_level": "INFO",
+        "debug_mode": false,
+        "enable_console": false
+    }
 }

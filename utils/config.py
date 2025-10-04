@@ -113,7 +113,33 @@ class AppConfig:
         "download_timeout": 300,     # 秒
         "temp_dir_name": "app_update",
         "skipped_versions": {},      # 跳过的版本：{"version": expire_timestamp}
-        "skip_duration_days": 30     # 跳过版本的有效期（天）
+        "skip_duration_days": 30,    # 跳过版本的有效期（天）
+        "exception_handler": {       # 异常处理配置
+            "enabled": True,         # 是否启用异常处理
+            "show_dialog": True,     # 是否显示错误对话框
+            "save_report": True,     # 是否保存错误报告
+            "report_dir": "error_reports"  # 错误报告目录
+        },
+        "theme": {                   # 主题配置
+            "mode": "auto"           # 主题模式: "light", "dark", "auto"
+        },
+        "appearance": {              # 外观设置
+            "font_size": 10,         # 字体大小
+            "window_width": 1024,    # 窗口宽度
+            "window_height": 768,    # 窗口高度
+            "remember_window_size": True  # 记住窗口大小
+        },
+        "behavior": {                # 行为设置
+            "minimize_to_tray": False,  # 最小化到托盘
+            "close_to_tray": False,     # 关闭到托盘
+            "start_minimized": False,   # 启动时最小化
+            "confirm_on_exit": True     # 退出时确认
+        },
+        "advanced": {                # 高级设置
+            "log_level": "INFO",     # 日志级别: DEBUG, INFO, WARNING, ERROR
+            "debug_mode": False,     # 调试模式
+            "enable_console": False  # 启用控制台
+        }
     }
     
     def __init__(self, config_file: str = "config.json"):
@@ -440,6 +466,171 @@ class AppConfig:
             return True
 
         return False
+
+    @property
+    def exception_handler_enabled(self) -> bool:
+        """异常处理器是否启用"""
+        return self.get("exception_handler", {}).get("enabled", True)
+
+    @property
+    def exception_handler_show_dialog(self) -> bool:
+        """是否显示错误对话框"""
+        return self.get("exception_handler", {}).get("show_dialog", True)
+
+    @property
+    def exception_handler_save_report(self) -> bool:
+        """是否保存错误报告"""
+        return self.get("exception_handler", {}).get("save_report", True)
+
+    @property
+    def exception_handler_report_dir(self) -> str:
+        """错误报告目录"""
+        return self.get("exception_handler", {}).get("report_dir", "error_reports")
+
+    # 主题配置属性
+    @property
+    def theme_mode(self) -> str:
+        """主题模式"""
+        return self.get("theme", {}).get("mode", "auto")
+
+    def set_theme_mode(self, mode: str) -> None:
+        """设置主题模式并保存
+
+        Args:
+            mode: 主题模式 ("light", "dark", "auto")
+        """
+        if "theme" not in self._config:
+            self._config["theme"] = {}
+        self._config["theme"]["mode"] = mode
+        self.save_config()
+
+    # 外观设置属性
+    @property
+    def font_size(self) -> int:
+        """字体大小"""
+        return self.get("appearance", {}).get("font_size", 10)
+
+    @property
+    def window_width(self) -> int:
+        """窗口宽度"""
+        return self.get("appearance", {}).get("window_width", 1024)
+
+    @property
+    def window_height(self) -> int:
+        """窗口高度"""
+        return self.get("appearance", {}).get("window_height", 768)
+
+    @property
+    def remember_window_size(self) -> bool:
+        """是否记住窗口大小"""
+        return self.get("appearance", {}).get("remember_window_size", True)
+
+    # 行为设置属性
+    @property
+    def minimize_to_tray(self) -> bool:
+        """是否最小化到托盘"""
+        return self.get("behavior", {}).get("minimize_to_tray", False)
+
+    @property
+    def close_to_tray(self) -> bool:
+        """是否关闭到托盘"""
+        return self.get("behavior", {}).get("close_to_tray", False)
+
+    @property
+    def start_minimized(self) -> bool:
+        """是否启动时最小化"""
+        return self.get("behavior", {}).get("start_minimized", False)
+
+    @property
+    def confirm_on_exit(self) -> bool:
+        """是否退出时确认"""
+        return self.get("behavior", {}).get("confirm_on_exit", True)
+
+    # 高级设置属性
+    @property
+    def log_level(self) -> str:
+        """日志级别"""
+        return self.get("advanced", {}).get("log_level", "INFO")
+
+    @property
+    def debug_mode(self) -> bool:
+        """是否调试模式"""
+        return self.get("advanced", {}).get("debug_mode", False)
+
+    @property
+    def enable_console(self) -> bool:
+        """是否启用控制台"""
+        return self.get("advanced", {}).get("enable_console", False)
+
+    def reset_to_defaults(self) -> None:
+        """重置所有配置到默认值"""
+        self._config = self.DEFAULT_CONFIG.copy()
+        self.save_config()
+
+    def export_config(self, file_path: str) -> bool:
+        """导出配置到文件
+
+        Args:
+            file_path: 导出文件路径
+
+        Returns:
+            是否成功导出
+        """
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(self._config, f, indent=4, ensure_ascii=False)
+            return True
+        except Exception as e:
+            print(f"导出配置失败: {e}")
+            return False
+
+    def import_config(self, file_path: str) -> bool:
+        """从文件导入配置
+
+        Args:
+            file_path: 导入文件路径
+
+        Returns:
+            是否成功导入
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                imported_config = json.load(f)
+                self._config.update(imported_config)
+                self.save_config()
+            return True
+        except Exception as e:
+            print(f"导入配置失败: {e}")
+            return False
+
+    def validate_config(self) -> tuple[bool, list[str]]:
+        """验证配置的有效性
+
+        Returns:
+            (是否有效, 错误信息列表)
+        """
+        errors = []
+
+        # 验证字体大小
+        font_size = self.font_size
+        if not isinstance(font_size, int) or font_size < 8 or font_size > 24:
+            errors.append("字体大小必须在 8-24 之间")
+
+        # 验证窗口大小
+        if self.window_width < 800 or self.window_height < 600:
+            errors.append("窗口大小不能小于 800x600")
+
+        # 验证日志级别
+        valid_log_levels = ["DEBUG", "INFO", "WARNING", "ERROR"]
+        if self.log_level not in valid_log_levels:
+            errors.append(f"日志级别必须是 {', '.join(valid_log_levels)} 之一")
+
+        # 验证主题模式
+        valid_themes = ["light", "dark", "auto"]
+        if self.theme_mode not in valid_themes:
+            errors.append(f"主题模式必须是 {', '.join(valid_themes)} 之一")
+
+        return (len(errors) == 0, errors)
 
 
 # 全局配置实例

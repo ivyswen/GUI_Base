@@ -10,3 +10,4 @@ wheels/
 .venv/
 logs/
 resources_rc.py
+error_reports/

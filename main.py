@@ -8,16 +8,16 @@ os.environ["QT_OPENGL"] = "desktop"
 from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget,
                                QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QStatusBar, QTextEdit, QPushButton)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QIcon, QAction, QFont
 
 # 导入自动更新相关模块
 from updater import UpdateManager
-from utils import app_logger, app_config
+from utils import app_logger, app_config, setup_exception_handler, setup_theme_manager, setup_notification_manager, get_notification_manager, SystemTray
 from utils.display import setup_high_dpi_support, setup_font_rendering
 
 # 导入GUI模块
-from gui import WelcomeTab, TextEditorTab, SettingsTab
+from gui import WelcomeTab, TextEditorTab, SettingsTab, ToastManager
 
 
 class MainWindow(QMainWindow):
@@ -28,11 +28,29 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.center_window()
 
+        # 初始化Toast管理器
+        self.toast_manager = ToastManager(self)
+
+        # 连接通知管理器信号
+        notification_manager = get_notification_manager()
+        notification_manager.notification_added.connect(self.on_notification_added)
+
+        # 初始化系统托盘
+        self.system_tray = SystemTray(self)
+        self.system_tray.show_window_requested.connect(self.show_from_tray)
+        self.system_tray.quit_requested.connect(self.quit_from_tray)
+        self.system_tray.show()
+
         # 初始化更新管理器
         self.update_manager = UpdateManager(self)
 
         # 启动时检查更新（延迟执行）
         self.update_manager.check_for_updates_on_startup()
+
+        # 检查启动时最小化设置
+        if app_config.start_minimized:
+            QTimer.singleShot(100, self.minimize_to_tray)
+            app_logger.info("应用启动时最小化到托盘")
 
 
 
@@ -92,6 +110,12 @@ class MainWindow(QMainWindow):
         file_menu.addAction(open_action)
 
         file_menu.addSeparator()
+
+        # 最小化到托盘
+        minimize_to_tray_action = QAction('最小化到托盘(&M)', self)
+        minimize_to_tray_action.setStatusTip('最小化到系统托盘')
+        minimize_to_tray_action.triggered.connect(self.minimize_to_tray)
+        file_menu.addAction(minimize_to_tray_action)
 
         # 退出动作
         exit_action = QAction('退出(&X)', self)
@@ -223,6 +247,94 @@ class MainWindow(QMainWindow):
             app_logger.error("更新管理器未初始化")
             self.statusBar().showMessage("更新功能不可用", 2000)
 
+    def on_notification_added(self, notification):
+        """新通知添加时的处理"""
+        if hasattr(self, 'toast_manager'):
+            self.toast_manager.show_toast(notification)
+
+    def show_from_tray(self):
+        """从托盘显示主窗口"""
+        self.show()
+        self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized | Qt.WindowState.WindowActive)
+        self.activateWindow()
+        self.raise_()
+        app_logger.debug("从托盘显示主窗口")
+
+    def quit_from_tray(self):
+        """从托盘退出应用"""
+        app_logger.info("从托盘退出应用")
+        if hasattr(self, 'system_tray'):
+            self.system_tray.cleanup()
+        QApplication.quit()
+
+    def minimize_to_tray(self):
+        """最小化到托盘"""
+        self.hide()
+        if hasattr(self, 'system_tray'):
+            self.system_tray.show_message(
+                app_config.app_name,
+                "程序已最小化到系统托盘"
+            )
+        app_logger.info("窗口已最小化到托盘")
+
+    def changeEvent(self, event):
+        """窗口状态改变事件"""
+        # 检查是否是最小化事件
+        if event.type() == event.Type.WindowStateChange:
+            if self.windowState() & Qt.WindowState.WindowMinimized:
+                # 如果启用了最小化到托盘
+                if app_config.minimize_to_tray:
+                    event.ignore()
+                    self.hide()
+                    if hasattr(self, 'system_tray'):
+                        self.system_tray.show_message(
+                            app_config.app_name,
+                            "程序已最小化到系统托盘"
+                        )
+                    app_logger.info("窗口最小化到托盘")
+                    return
+        super().changeEvent(event)
+
+    def closeEvent(self, event):
+        """窗口关闭事件"""
+        # 检查是否启用了最小化到托盘
+        if app_config.close_to_tray:
+            event.ignore()
+            self.hide()
+            if hasattr(self, 'system_tray'):
+                self.system_tray.show_message(
+                    app_config.app_name,
+                    "程序已最小化到系统托盘"
+                )
+            app_logger.info("窗口已最小化到托盘")
+        else:
+            # 确认退出
+            if app_config.confirm_on_exit:
+                from PySide6.QtWidgets import QMessageBox
+                from utils.styles import get_message_box_style
+
+                msg_box = QMessageBox(self)
+                msg_box.setWindowTitle("确认退出")
+                msg_box.setText("确定要退出程序吗？")
+                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+                msg_box.setStyleSheet(get_message_box_style())
+
+                reply = msg_box.exec()
+                if reply == QMessageBox.StandardButton.Yes:
+                    if hasattr(self, 'system_tray'):
+                        self.system_tray.cleanup()
+                    event.accept()
+                    app_logger.info("用户确认退出")
+                else:
+                    event.ignore()
+                    app_logger.info("用户取消退出")
+            else:
+                if hasattr(self, 'system_tray'):
+                    self.system_tray.cleanup()
+                event.accept()
+                app_logger.info("窗口已关闭")
+
 
 def main():
     """主函数"""
@@ -239,6 +351,15 @@ def main():
     app.setApplicationName(app_config.app_name)
     app.setApplicationVersion(app_config.current_version)
     app.setOrganizationName(app_config.organization_name)
+
+    # 设置全局异常处理器
+    setup_exception_handler(app)
+
+    # 设置主题系统
+    setup_theme_manager(app)
+
+    # 设置通知管理器
+    setup_notification_manager()
 
     # 创建主窗口
     window = MainWindow()

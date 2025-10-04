@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QPushButton)
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 from .base_tab import BaseTab
+from utils.notification import get_notification_manager
 
 
 class WelcomeTab(BaseTab):
@@ -57,11 +58,16 @@ class WelcomeTab(BaseTab):
         demo_button = QPushButton("运行演示")
         demo_button.clicked.connect(self.run_demo)
         demo_button.setStyleSheet(self.get_button_style("success"))
-        
+
+        test_notification_button = QPushButton("测试通知")
+        test_notification_button.clicked.connect(self.test_notifications)
+        test_notification_button.setStyleSheet(self.get_button_style("info"))
+
         quick_actions_layout.addStretch()
         quick_actions_layout.addWidget(start_button)
         quick_actions_layout.addWidget(help_button)
         quick_actions_layout.addWidget(demo_button)
+        quick_actions_layout.addWidget(test_notification_button)
         quick_actions_layout.addStretch()
         
         layout.addWidget(welcome_label)
@@ -111,5 +117,23 @@ class WelcomeTab(BaseTab):
             # 获取文本编辑器并设置演示文本
             if hasattr(self.main_window, 'text_edit'):
                 self.main_window.text_edit.setPlainText(demo_text)
-            
+
             self.update_status_bar("演示已启动，请查看文本编辑页面", 3000)
+
+    def test_notifications(self):
+        """测试通知功能"""
+        try:
+            notification_manager = get_notification_manager()
+
+            # 显示不同类型的通知
+            notification_manager.info("信息通知", "这是一条信息通知")
+
+            # 延迟显示其他通知
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(500, lambda: notification_manager.success("成功通知", "操作已成功完成"))
+            QTimer.singleShot(1000, lambda: notification_manager.warning("警告通知", "请注意这个警告"))
+            QTimer.singleShot(1500, lambda: notification_manager.error("错误通知", "发生了一个错误"))
+
+            self.update_status_bar("通知测试已启动", 2000)
+        except Exception as e:
+            self.update_status_bar(f"通知测试失败: {e}", 3000)

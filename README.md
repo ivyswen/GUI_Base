@@ -14,6 +14,10 @@
 - **全局日志系统**: 统一的日志记录，支持多种日志级别和文件输出
 - **全局配置管理**: 集中的配置管理，支持版本同步和动态配置
 - **高DPI显示优化**: 支持高分辨率显示器，字体清晰渲染，跨平台字体兼容
+- **异常处理系统**: 全局异常捕获、友好的错误提示和详细的错误报告
+- **主题系统**: 深色/浅色主题切换，支持跟随系统主题，实时切换无需重启
+- **设置管理系统**: 完整的配置管理，支持分类设置、验证、重置、导入导出
+- **通知/消息系统**: Toast通知、多种类型、消息历史、淡入淡出动画
 
 ### 📋 界面组件
 - **欢迎页面**: 程序介绍和功能说明，包含快速操作按钮
@@ -34,12 +38,16 @@ GUI_Base/
 │   ├── base_tab.py             # 基础Tab类，提供共享功能
 │   ├── tab1.py                 # 欢迎页面模块
 │   ├── tab2.py                 # 文本编辑器模块
-│   └── tab3.py                 # 设置页面模块
+│   ├── tab3.py                 # 设置页面模块
+│   └── error_dialog.py         # 错误对话框组件
 ├── utils/                      # 全局工具模块（新增）
 │   ├── __init__.py             # 模块初始化文件
 │   ├── logger.py               # 全局日志组件
 │   ├── config.py               # 全局配置组件
-│   └── display.py              # 显示优化组件（高DPI支持、字体渲染）
+│   ├── display.py              # 显示优化组件（高DPI支持、字体渲染）
+│   ├── exception_handler.py    # 全局异常处理组件
+│   ├── theme.py                # 主题管理组件
+│   └── styles.py               # 样式工具组件
 ├── updater/                    # 自动更新模块
 │   ├── __init__.py             # 模块初始化文件
 │   ├── update_manager.py       # 更新管理器
@@ -48,6 +56,10 @@ GUI_Base/
 │   └── file_manager.py         # 文件管理模块
 ├── docs/                       # 文档目录
 │   ├── AUTO_UPDATE_GUIDE.md    # 自动更新使用指南
+│   ├── EXCEPTION_HANDLING.md   # 异常处理系统文档
+│   ├── THEME_SYSTEM.md         # 主题系统文档
+│   ├── SETTINGS_MANAGEMENT.md  # 设置管理系统文档
+│   ├── NOTIFICATION_SYSTEM.md  # 通知/消息系统文档
 │   └── REFACTORING_SUMMARY.md  # 重构总结文档
 ├── examples/                   # 示例文件目录
 │   ├── example_update.json     # 示例远程版本信息
@@ -461,6 +473,193 @@ update.exe --target-dir "C:\MyApp" --update-package "d:\update_v2.0.zip" --app-e
 - 远程版本信息示例：`examples/example_update.json`
 - 更新程序示例：`examples/update_example.py`
 - 按钮样式演示：`examples/button_style_demo.py`
+
+## 🛡️ 异常处理系统（新增）
+
+### 功能概述
+全局异常处理系统提供了完整的错误捕获和用户反馈机制：
+
+- ✅ **全局异常捕获**：自动捕获所有未处理的异常
+- ✅ **友好的错误对话框**：向用户显示清晰的错误信息
+- ✅ **详细的错误报告**：自动生成包含系统信息的错误报告文件
+- ✅ **日志集成**：所有异常自动记录到日志文件
+- ✅ **可配置**：通过配置文件灵活控制异常处理行为
+- ✅ **用户操作**：提供复制错误信息、查看日志等便捷功能
+
+### 核心模块
+- `utils/exception_handler.py`: 全局异常处理器
+- `gui/error_dialog.py`: 错误对话框组件
+
+### 配置选项
+在 `config.json` 中配置异常处理行为：
+
+```json
+{
+    "exception_handler": {
+        "enabled": true,         // 是否启用异常处理
+        "show_dialog": true,     // 是否显示错误对话框
+        "save_report": true,     // 是否保存错误报告
+        "report_dir": "error_reports"  // 错误报告目录
+    }
+}
+```
+
+### 错误报告
+- **位置**：`error_reports/` 目录（开发环境在项目根目录，生产环境在exe同目录）
+- **格式**：JSON 格式，包含时间戳、异常信息、堆栈跟踪和系统信息
+- **文件名**：`error_report_YYYYMMDD_HHMMSS.json`
+
+### 错误对话框功能
+1. 显示简洁的错误信息
+2. 可展开查看详细的技术信息
+3. 一键复制错误信息到剪贴板
+4. 直接打开日志文件所在目录
+5. 安全退出应用程序
+
+### 使用方法
+异常处理系统会自动工作，无需手动调用。当程序发生未捕获的异常时：
+1. 异常信息自动记录到日志文件
+2. 生成详细的错误报告文件（如果启用）
+3. 显示友好的错误对话框（如果启用）
+
+### 文档
+- 详细文档：`docs/EXCEPTION_HANDLING.md`
+- 测试示例：`examples/test_exception_handler.py`
+
+## 🎨 主题系统（新增）
+
+### 功能概述
+主题系统提供了深色/浅色主题切换功能，支持手动选择和自动跟随系统主题：
+
+- ✅ **深色主题**：深色背景，减少眼睛疲劳
+- ✅ **浅色主题**：明亮背景，传统视觉体验
+- ✅ **跟随系统**：自动检测并跟随操作系统主题设置
+- ✅ **实时切换**：主题切换立即生效，无需重启应用
+- ✅ **持久化配置**：主题设置自动保存到配置文件
+- ✅ **跨平台支持**：支持 Windows、macOS 和 Linux
+
+### 核心模块
+- `utils/theme.py`: 主题管理器
+- `utils/styles.py`: 主题感知的样式工具
+
+### 配置选项
+在 `config.json` 中配置主题：
+
+```json
+{
+    "theme": {
+        "mode": "auto"  // "light", "dark", "auto"
+    }
+}
+```
+
+### 使用方法
+1. **在设置页面切换**：打开应用 → 设置标签页 → 主题设置 → 选择主题
+2. **程序化使用**：
+```python
+from utils.theme import get_theme_manager
+
+theme_manager = get_theme_manager()
+theme_manager.set_theme("dark", save=True)  # 深色主题
+theme_manager.set_theme("light", save=True)  # 浅色主题
+theme_manager.set_theme("auto", save=True)  # 跟随系统
+```
+
+### 系统主题检测
+- **Windows**：读取注册表 `AppsUseLightTheme`
+- **macOS**：执行 `defaults read -g AppleInterfaceStyle`
+- **Linux**：执行 `gsettings get org.gnome.desktop.interface gtk-theme`
+
+### 文档
+- 详细文档：`docs/THEME_SYSTEM.md`
+- 测试示例：`examples/test_theme.py`
+
+## ⚙️ 设置/偏好管理系统（新增）
+
+### 功能概述
+完整的配置管理系统，支持设置分类、验证、重置、导入导出等功能：
+
+- ✅ **设置分类**：主题、外观、行为、更新、高级设置
+- ✅ **配置验证**：自动验证配置项的有效性
+- ✅ **配置重置**：一键重置到默认值
+- ✅ **导入导出**：支持配置文件的导入导出
+- ✅ **实时生效**：部分设置实时生效，部分需要重启
+- ✅ **持久化存储**：所有设置自动保存到配置文件
+
+### 设置分类
+1. **主题设置**：主题模式（浅色/深色/自动）
+2. **外观设置**：字体大小、窗口大小、记住窗口大小
+3. **行为设置**：退出确认、启动最小化
+4. **更新设置**：自动检查更新
+5. **高级设置**：日志级别、调试模式
+
+### 配置管理功能
+- **重置到默认值**：一键恢复所有默认设置
+- **导出配置**：备份当前配置到文件
+- **导入配置**：从文件恢复配置
+- **配置验证**：自动验证配置有效性
+
+### 使用方法
+1. **在设置页面修改**：打开应用 → 设置标签页 → 修改相应设置
+2. **程序化使用**：
+```python
+from utils.config import app_config
+
+# 读取设置
+font_size = app_config.font_size
+theme_mode = app_config.theme_mode
+
+# 重置配置
+app_config.reset_to_defaults()
+
+# 导出/导入配置
+app_config.export_config("backup.json")
+app_config.import_config("backup.json")
+```
+
+### 文档
+- 详细文档：`docs/SETTINGS_MANAGEMENT.md`
+
+## 📢 通知/消息系统（新增）
+
+### 功能概述
+完整的通知系统，支持Toast通知、消息历史等功能：
+
+- ✅ **Toast通知**：临时的弹出通知，自动消失
+- ✅ **多种类型**：信息、成功、警告、错误
+- ✅ **自定义时长**：可设置显示时长或不自动关闭
+- ✅ **淡入淡出动画**：平滑的显示和隐藏效果
+- ✅ **消息历史**：保存所有通知记录
+- ✅ **未读标记**：支持标记已读/未读
+- ✅ **点击回调**：支持点击通知时执行自定义操作
+
+### 通知类型
+- **INFO**：信息通知（蓝色，3秒）
+- **SUCCESS**：成功通知（绿色，3秒）
+- **WARNING**：警告通知（黄色，5秒）
+- **ERROR**：错误通知（红色，不自动关闭）
+
+### 使用方法
+```python
+from utils.notification import get_notification_manager
+
+notification_manager = get_notification_manager()
+
+# 显示不同类型的通知
+notification_manager.info("标题", "这是一条信息通知")
+notification_manager.success("成功", "操作已完成")
+notification_manager.warning("警告", "请注意")
+notification_manager.error("错误", "发生了错误")
+
+# 自定义时长和回调
+notification_manager.info("标题", "消息", duration=5000, action=callback_func)
+```
+
+### 测试通知
+在欢迎页面点击"测试通知"按钮，可以看到四种类型的通知效果。
+
+### 文档
+- 详细文档：`docs/NOTIFICATION_SYSTEM.md`
 
 ## 扩展建议
 

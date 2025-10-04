@@ -1,7 +1,8 @@
 ---
-type: "always_apply"
+type: "agent_requested"
 description: "Example description"
 ---
+
 本文档定义了本项目所有AI驱动的代码生成与修改必须遵守的协议，遵循本协议是强制要求。
 
 ### **第一部分：元规则与核心指令**

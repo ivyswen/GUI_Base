@@ -6,13 +6,18 @@ GUI模块
 from .base_tab import BaseTab
 from .tab1 import WelcomeTab
 from .tab2 import TextEditorTab
-from .tab3 import SettingsTab
+from .settings_tab import SettingsTab
+from .error_dialog import ErrorDialog
+from .toast import ToastWidget, ToastManager
 
 __all__ = [
     'BaseTab',
-    'WelcomeTab', 
+    'WelcomeTab',
     'TextEditorTab',
-    'SettingsTab'
+    'SettingsTab',
+    'ErrorDialog',
+    'ToastWidget',
+    'ToastManager'
 ]
 
 __version__ = '1.0.0'

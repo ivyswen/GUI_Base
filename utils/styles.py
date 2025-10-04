@@ -1,10 +1,31 @@
 """
 通用样式工具模块
 提供统一的UI样式定义，供所有组件使用
+支持深色和浅色主题
 """
 
+from typing import Optional
 
-def get_button_style(style_type="default"):
+
+def _get_theme_manager():
+    """获取主题管理器（延迟导入避免循环依赖）"""
+    try:
+        from .theme import get_theme_manager
+        return get_theme_manager()
+    except (ImportError, RuntimeError):
+        # 主题管理器未初始化或导入失败，返回 None
+        return None
+
+
+def _is_dark_theme() -> bool:
+    """判断当前是否为深色主题"""
+    theme_manager = _get_theme_manager()
+    if theme_manager:
+        return theme_manager.is_dark_theme()
+    return False
+
+
+def get_button_style(style_type="default", theme: Optional[str] = None):
     """获取按钮样式，确保视觉一致性
 
     Args:
@@ -22,23 +43,52 @@ def get_button_style(style_type="default"):
             - "pink": 粉色按钮样式
             - "indigo": 靛蓝按钮样式
             - "teal": 青绿按钮样式
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
     """
-    base_style = """
-        QPushButton {
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 500;
-            min-width: 60px;
-            min-height: 20px;
-            border: 1px solid;
-        }
-        QPushButton:disabled {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-        }
-    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    # 基础样式
+    if is_dark:
+        base_style = """
+            QPushButton {
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 60px;
+                min-height: 20px;
+                border: 1px solid;
+            }
+            QPushButton:disabled {
+                background-color: #2a2a2a;
+                border: 1px solid #3c3c3c;
+                color: #808080;
+            }
+        """
+    else:
+        base_style = """
+            QPushButton {
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 60px;
+                min-height: 20px;
+                border: 1px solid;
+            }
+            QPushButton:disabled {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                color: #6c757d;
+            }
+        """
     
     if style_type == "primary":
         return base_style + """
@@ -257,52 +307,104 @@ def get_button_style(style_type="default"):
             }
         """
     else:  # default
-        return base_style + """
+        if is_dark:
+            return base_style + """
+                QPushButton {
+                    background-color: #3c3c3c;
+                    border-color: #555555;
+                    color: #e0e0e0;
+                }
+                QPushButton:hover {
+                    background-color: #4a4a4a;
+                    border-color: #666666;
+                }
+                QPushButton:pressed {
+                    background-color: #2d2d2d;
+                    border-color: #444444;
+                }
+                QPushButton:disabled {
+                    background-color: #2a2a2a;
+                    border: 1px solid #3c3c3c;
+                    color: #808080;
+                    opacity: 0.6;
+                }
+            """
+        else:
+            return base_style + """
+                QPushButton {
+                    background-color: #f8f9fa;
+                    border-color: #ced4da;
+                    color: #495057;
+                }
+                QPushButton:hover {
+                    background-color: #e9ecef;
+                    border-color: #adb5bd;
+                }
+                QPushButton:pressed {
+                    background-color: #dee2e6;
+                    border-color: #6c757d;
+                }
+                QPushButton:disabled {
+                    background-color: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    color: #6c757d;
+                    opacity: 0.6;
+                }
+            """
+
+
+def get_dialog_button_style(style_type="default", theme: Optional[str] = None):
+    """获取对话框按钮样式（稍大一些的按钮）
+
+    Args:
+        style_type: 样式类型，与 get_button_style 相同
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    # 基础样式
+    if is_dark:
+        base_style = """
             QPushButton {
-                background-color: #f8f9fa;
-                border-color: #ced4da;
-                color: #495057;
-            }
-            QPushButton:hover {
-                background-color: #e9ecef;
-                border-color: #adb5bd;
-            }
-            QPushButton:pressed {
-                background-color: #dee2e6;
-                border-color: #6c757d;
+                border-radius: 4px;
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 80px;
+                min-height: 24px;
+                border: 1px solid;
             }
             QPushButton:disabled {
-                background-color: #f8f9fa;
-                border: 1px solid #dee2e6;
-                color: #6c757d;
-                opacity: 0.6;
+                background-color: #2a2a2a;
+                border: 1px solid #3c3c3c;
+                color: #808080;
+            }
+        """
+    else:
+        base_style = """
+            QPushButton {
+                border-radius: 4px;
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: 500;
+                min-width: 80px;
+                min-height: 24px;
+                border: 1px solid;
+            }
+            QPushButton:disabled {
+                background-color: #f8f8f8;
+                border: 1px solid #e0e0e0;
+                color: #a0a0a0;
             }
         """
 
-
-def get_dialog_button_style(style_type="default"):
-    """获取对话框按钮样式（稍大一些的按钮）
-    
-    Args:
-        style_type: 样式类型，与 get_button_style 相同
-    """
-    base_style = """
-        QPushButton {
-            border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 500;
-            min-width: 80px;
-            min-height: 24px;
-            border: 1px solid;
-        }
-        QPushButton:disabled {
-            background-color: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            color: #a0a0a0;
-        }
-    """
-    
     if style_type == "primary":
         return base_style + """
             QPushButton {
@@ -320,62 +422,396 @@ def get_dialog_button_style(style_type="default"):
             }
         """
     else:  # default
-        return base_style + """
-            QPushButton {
-                background-color: #f0f0f0;
-                border-color: #c0c0c0;
-                color: #333333;
+        if is_dark:
+            return base_style + """
+                QPushButton {
+                    background-color: #3c3c3c;
+                    border-color: #555555;
+                    color: #e0e0e0;
+                }
+                QPushButton:hover {
+                    background-color: #4a4a4a;
+                    border-color: #666666;
+                }
+                QPushButton:pressed {
+                    background-color: #2d2d2d;
+                    border-color: #444444;
+                }
+            """
+        else:
+            return base_style + """
+                QPushButton {
+                    background-color: #f0f0f0;
+                    border-color: #c0c0c0;
+                    color: #333333;
+                }
+                QPushButton:hover {
+                    background-color: #e0e0e0;
+                    border-color: #a0a0a0;
+                }
+                QPushButton:pressed {
+                    background-color: #d0d0d0;
+                    border-color: #808080;
+                }
+            """
+
+
+# 其他常用样式
+def get_group_box_style(theme: Optional[str] = None):
+    """获取分组框样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #3c3c3c;
+                border-radius: 5px;
+                margin-top: 1ex;
+                padding-top: 10px;
+                color: #e0e0e0;
             }
-            QPushButton:hover {
-                background-color: #e0e0e0;
-                border-color: #a0a0a0;
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
             }
-            QPushButton:pressed {
-                background-color: #d0d0d0;
-                border-color: #808080;
+        """
+    else:
+        return """
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #cccccc;
+                border-radius: 5px;
+                margin-top: 1ex;
+                padding-top: 10px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
             }
         """
 
 
-# 其他常用样式
-def get_group_box_style():
-    """获取分组框样式"""
-    return """
-        QGroupBox {
-            font-weight: bold;
-            border: 2px solid #cccccc;
-            border-radius: 5px;
-            margin-top: 1ex;
-            padding-top: 10px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 10px;
-            padding: 0 5px 0 5px;
-        }
+def get_table_style(theme: Optional[str] = None):
+    """获取表格样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
     """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QTableWidget {
+                gridline-color: #3c3c3c;
+                background-color: #2d2d2d;
+                alternate-background-color: #252525;
+                color: #e0e0e0;
+            }
+            QTableWidget::item {
+                padding: 5px;
+                border: none;
+            }
+            QTableWidget::item:selected {
+                background-color: #0d6efd;
+                color: white;
+            }
+            QHeaderView::section {
+                background-color: #3c3c3c;
+                padding: 5px;
+                border: 1px solid #555555;
+                font-weight: bold;
+                color: #e0e0e0;
+            }
+        """
+    else:
+        return """
+            QTableWidget {
+                gridline-color: #d0d0d0;
+                background-color: white;
+                alternate-background-color: #f8f8f8;
+            }
+            QTableWidget::item {
+                padding: 5px;
+                border: none;
+            }
+            QTableWidget::item:selected {
+                background-color: #007acc;
+                color: white;
+            }
+            QHeaderView::section {
+                background-color: #f0f0f0;
+                padding: 5px;
+                border: 1px solid #d0d0d0;
+                font-weight: bold;
+            }
+        """
 
 
-def get_table_style():
-    """获取表格样式"""
-    return """
-        QTableWidget {
-            gridline-color: #d0d0d0;
-            background-color: white;
-            alternate-background-color: #f8f8f8;
-        }
-        QTableWidget::item {
-            padding: 5px;
-            border: none;
-        }
-        QTableWidget::item:selected {
-            background-color: #007acc;
-            color: white;
-        }
-        QHeaderView::section {
-            background-color: #f0f0f0;
-            padding: 5px;
-            border: 1px solid #d0d0d0;
-            font-weight: bold;
-        }
+def get_label_style(theme: Optional[str] = None):
+    """获取标签样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
     """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QLabel {
+                color: #e0e0e0;
+            }
+        """
+    else:
+        return """
+            QLabel {
+                color: #212529;
+            }
+        """
+
+
+def get_text_edit_style(theme: Optional[str] = None):
+    """获取文本编辑器样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QTextEdit, QPlainTextEdit {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3c3c3c;
+                selection-background-color: #0d6efd;
+                selection-color: white;
+            }
+        """
+    else:
+        return """
+            QTextEdit, QPlainTextEdit {
+                background-color: #ffffff;
+                color: #212529;
+                border: 1px solid #ced4da;
+                selection-background-color: #007bff;
+                selection-color: white;
+            }
+        """
+
+
+def get_spinbox_style(theme: Optional[str] = None):
+    """获取数字输入框样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QSpinBox {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3c3c3c;
+                padding: 4px;
+                border-radius: 4px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #555555;
+            }
+            QSpinBox:focus {
+                border: 1px solid #0d6efd;
+            }
+        """
+    else:
+        return """
+            QSpinBox {
+                background-color: #ffffff;
+                color: #212529;
+                border: 1px solid #ced4da;
+                padding: 4px;
+                border-radius: 4px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #86b7fe;
+            }
+            QSpinBox:focus {
+                border: 1px solid #0d6efd;
+            }
+        """
+
+
+def get_combobox_style(theme: Optional[str] = None):
+    """获取下拉框样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QComboBox {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3c3c3c;
+                padding: 4px;
+                border-radius: 4px;
+                min-width: 100px;
+            }
+            QComboBox:hover {
+                border: 1px solid #555555;
+            }
+            QComboBox:focus {
+                border: 1px solid #0d6efd;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3c3c3c;
+                selection-background-color: #0d6efd;
+                selection-color: white;
+            }
+        """
+    else:
+        return """
+            QComboBox {
+                background-color: #ffffff;
+                color: #212529;
+                border: 1px solid #ced4da;
+                padding: 4px;
+                border-radius: 4px;
+                min-width: 100px;
+            }
+            QComboBox:hover {
+                border: 1px solid #86b7fe;
+            }
+            QComboBox:focus {
+                border: 1px solid #0d6efd;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #ffffff;
+                color: #212529;
+                border: 1px solid #ced4da;
+                selection-background-color: #007bff;
+                selection-color: white;
+            }
+        """
+
+
+def get_message_box_style(theme: Optional[str] = None):
+    """获取消息框样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定使用的主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QMessageBox {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+            }
+            QMessageBox QLabel {
+                color: #e0e0e0;
+                background-color: transparent;
+            }
+            QMessageBox QPushButton {
+                background-color: #3d3d3d;
+                color: #e0e0e0;
+                border: 1px solid #555555;
+                border-radius: 4px;
+                padding: 5px 15px;
+                min-width: 60px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #4d4d4d;
+                border-color: #666666;
+            }
+            QMessageBox QPushButton:pressed {
+                background-color: #2d2d2d;
+            }
+        """
+    else:
+        return """
+            QMessageBox {
+                background-color: #ffffff;
+                color: #212529;
+            }
+            QMessageBox QLabel {
+                color: #212529;
+                background-color: transparent;
+            }
+            QMessageBox QPushButton {
+                background-color: #f0f0f0;
+                color: #212529;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                padding: 5px 15px;
+                min-width: 60px;
+            }
+            QMessageBox QPushButton:hover {
+                background-color: #e0e0e0;
+                border-color: #adb5bd;
+            }
+            QMessageBox QPushButton:pressed {
+                background-color: #d0d0d0;
+            }
+        """
