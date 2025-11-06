@@ -3,19 +3,19 @@
 提供所有Tab页面的共享功能和样式
 """
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 from PySide6.QtCore import QObject
 from utils.display import apply_font_to_widget
-from utils.styles import get_button_style
+from utils.styles import get_button_style, get_message_box_style
 
 
 class BaseTab(QWidget):
     """基础Tab类，提供共享的功能和样式"""
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.main_window = parent
-    
+
     def get_button_style(self, style_type="default"):
         """获取按钮样式，确保视觉一致性
 
@@ -28,7 +28,7 @@ class BaseTab(QWidget):
                 - "danger": 危险按钮样式（红色）
         """
         return get_button_style(style_type)
-    
+
     def update_status_bar(self, message, timeout=2000):
         """更新状态栏消息
 
@@ -38,6 +38,28 @@ class BaseTab(QWidget):
         """
         if self.main_window and hasattr(self.main_window, 'statusBar'):
             self.main_window.statusBar().showMessage(message, timeout)
+
+    def show_themed_message_box(self, icon, title, text, standard_buttons):
+        """
+        显示主题感知的消息框
+
+        Args:
+            icon: 消息框图标（QMessageBox.Icon）
+            title: 标题
+            text: 文本内容
+            standard_buttons: 标准按钮（如 QMessageBox.StandardButton.Ok）
+
+        Returns:
+            QMessageBox.StandardButton: 用户点击的按钮
+        """
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(icon)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(text)
+        msg_box.setStandardButtons(standard_buttons)
+        msg_box.setStyleSheet(get_message_box_style())
+
+        return msg_box.exec()
 
     def apply_title_font(self, widget):
         """为控件应用标题字体"""
@@ -54,3 +76,4 @@ class BaseTab(QWidget):
     def apply_small_font(self, widget):
         """为控件应用小字体"""
         apply_font_to_widget(widget, font_size=8)
+

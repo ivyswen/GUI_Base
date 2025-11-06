@@ -815,3 +815,66 @@ def get_message_box_style(theme: Optional[str] = None):
                 background-color: #d0d0d0;
             }
         """
+
+
+def get_line_edit_style(theme: Optional[str] = None):
+    """获取单行输入框样式
+
+    Args:
+        theme: 主题类型，可选值：
+            - None: 使用当前主题（默认）
+            - "light": 强制使用浅色主题样式
+            - "dark": 强制使用深色主题样式
+    """
+    # 确定是否使用深色主题
+    if theme is None:
+        is_dark = _is_dark_theme()
+    else:
+        is_dark = (theme == "dark")
+
+    if is_dark:
+        return """
+            QLineEdit {
+                background-color: #2d2d2d;
+                color: #e0e0e0;
+                border: 1px solid #3c3c3c;
+                padding: 6px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+            }
+            QLineEdit:hover {
+                border: 1px solid #555555;
+            }
+            QLineEdit:focus {
+                border: 1px solid #0d6efd;
+                background-color: #252525;
+            }
+            QLineEdit:disabled {
+                background-color: #1a1a1a;
+                color: #808080;
+                border: 1px solid #2a2a2a;
+            }
+        """
+    else:
+        return """
+            QLineEdit {
+                background-color: #ffffff;
+                color: #212529;
+                border: 1px solid #ced4da;
+                padding: 6px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+            }
+            QLineEdit:hover {
+                border: 1px solid #86b7fe;
+            }
+            QLineEdit:focus {
+                border: 1px solid #0d6efd;
+                background-color: #f8f9fa;
+            }
+            QLineEdit:disabled {
+                background-color: #f8f9fa;
+                color: #6c757d;
+                border: 1px solid #e9ecef;
+            }
+        """

@@ -5,11 +5,11 @@ from pathlib import Path
 # 在导入PySide6之前设置OpenGL属性
 os.environ["QT_OPENGL"] = "desktop"
 
-from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget,
+from PySide6.QtWidgets import (QApplication, QMainWindow, QTabWidget, QTabBar,
                                QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QStatusBar, QTextEdit, QPushButton)
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QIcon, QAction, QFont
+                               QStatusBar, QTextEdit, QPushButton, QStyleOptionTab, QStyle)
+from PySide6.QtCore import Qt, QTimer, QSize
+from PySide6.QtGui import QIcon, QAction, QFont, QPainter
 
 # 导入自动更新相关模块
 from updater import UpdateManager
@@ -18,6 +18,42 @@ from utils.display import setup_high_dpi_support, setup_font_rendering
 
 # 导入GUI模块
 from gui import WelcomeTab, TextEditorTab, SettingsTab, ToastManager
+
+
+class HorizontalTabBar(QTabBar):
+    """自定义TabBar类，用于左侧标签页水平显示文字"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setDrawBase(False)
+
+    def tabSizeHint(self, index):
+        """重写tabSizeHint以返回统一的尺寸"""
+        # 获取基础尺寸
+        size = super().tabSizeHint(index)
+        # 强制所有标签使用相同的高度和宽度
+        # 宽度与 QSS 中的 max-width 保持一致（190px）
+        return QSize(190, 40)
+
+    def paintEvent(self, event):
+        """重写paintEvent以阻止tab旋转"""
+        painter = QPainter(self)
+        style = self.style()
+
+        for index in range(self.count()):
+            opt = QStyleOptionTab()
+            self.initStyleOption(opt, index)
+
+            # 保存painter状态
+            painter.save()
+
+            # 在绘制之前禁用旋转 - 将shape设置为North
+            opt.shape = QTabBar.RoundedNorth
+
+            # 绘制tab
+            style.drawControl(QStyle.CE_TabBarTab, opt, painter, self)
+
+            painter.restore()
 
 
 class MainWindow(QMainWindow):
@@ -168,6 +204,47 @@ class MainWindow(QMainWindow):
         """创建中央部件和标签页"""
         # 创建标签页控件
         self.tab_widget = QTabWidget()
+
+        # 使用自定义的HorizontalTabBar替换默认tabBar
+        self.tab_widget.setTabBar(HorizontalTabBar())
+
+        # 设置 Tab 位置为左侧，但使用自定义tabBar保持文字水平
+        self.tab_widget.setTabPosition(QTabWidget.TabPosition.West)
+
+        # 设置标签栏样式，确保左侧标签的文字水平排列
+        self.tab_widget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #C6C6C6;
+                background-color: transparent;
+            }
+            QTabWidget::tab-bar {
+                alignment: top;
+                left: 1px;
+            }
+            QTabBar::tab {
+                background-color: transparent;
+                padding: 5px 20px;
+                margin: 0px 0px 3px 0px;
+                min-width: 170px;
+                max-width: 190px;
+                min-height: 30px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                border: none;
+                border-right: 3px solid transparent;
+                /* 确保文字水平排列 */
+                text-align: center;
+            }
+            QTabBar::tab:selected {
+                background-color: rgba(0, 120, 212, 0.15);
+                box-shadow: inset -3px 0 0 0 #0078D4;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: rgba(0, 120, 212, 0.08);
+            }
+        """)
+
         self.setCentralWidget(self.tab_widget)
 
         # 创建第一个标签页 - 欢迎页面
@@ -236,11 +313,19 @@ class MainWindow(QMainWindow):
     def show_about(self):
         """显示关于信息"""
         from PySide6.QtWidgets import QMessageBox
-        QMessageBox.about(self, "关于",
-                         f"{app_config.app_name} v{app_config.current_version}\n\n"
-                         "一个基础的GUI程序模板\n"
-                         "基于PySide6开发\n\n"
-                         f"组织: {app_config.organization_name}")
+        from utils.styles import get_message_box_style
+
+        # 使用主题感知的消息框
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("关于")
+        msg_box.setText(
+            f"{app_config.app_name} v{app_config.current_version}\n\n"
+            "一个基础的GUI程序模板\n"
+            "基于PySide6开发\n\n"
+            f"组织: {app_config.organization_name}"
+        )
+        msg_box.setStyleSheet(get_message_box_style())
+        msg_box.exec()
 
 
 

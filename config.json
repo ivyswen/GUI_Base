@@ -9,7 +9,7 @@
     "download_timeout": 300,
     "temp_dir_name": "app_update",
     "skipped_versions": {
-        "2.0.0": 1762129069.8001878
+        "2.0.0": 1764985711.3467796
     },
     "skip_duration_days": 30,
     "exception_handler": {
@@ -19,7 +19,7 @@
         "report_dir": "error_reports"
     },
     "theme": {
-        "mode": "auto"
+        "mode": "light"
     },
     "appearance": {
         "font_size": 11,
